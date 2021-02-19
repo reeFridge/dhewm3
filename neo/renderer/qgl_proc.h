@@ -30,6 +30,35 @@ If you have questions concerning this license or the applicable additional terms
 #error "you must define QGLPROC before including this file"
 #endif
 
+// GLSL
+QGLPROC(glActiveTexture, void, (GLenum texture))
+QGLPROC(glGenBuffers, void, (GLsizei n, GLuint *buffers))
+QGLPROC(glGenVertexArrays, void, (GLsizei n, GLuint *arrays))
+QGLPROC(glBindVertexArray, void, (GLuint array))
+QGLPROC(glBindBuffer, void, (GLenum target, GLuint buffer))
+QGLPROC(glBufferData, void, (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage))
+QGLPROC(glCreateShader, GLuint, (GLenum type))
+QGLPROC(glShaderSource, void, (GLuint shader, GLsizei count, const GLchar* *string, const GLint *length))
+QGLPROC(glGetShaderiv, void, (GLuint shader, GLenum pname, GLint *params))
+QGLPROC(glGetShaderInfoLog, void, (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog))
+QGLPROC(glCreateProgram, GLuint, (void))
+QGLPROC(glAttachShader, void, (GLuint program, GLuint shader))
+QGLPROC(glLinkProgram, void, (GLuint program))
+QGLPROC(glDeleteShader, void, (GLuint shader))
+QGLPROC(glGetProgramiv, void, (GLuint program, GLenum pname, GLint *params))
+QGLPROC(glGetProgramInfoLog, void, (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog))
+QGLPROC(glCompileShader, void, (GLuint shader))
+QGLPROC(glUseProgram, void, (GLuint program))
+QGLPROC(glEnableVertexAttribArray, void, (GLuint index))
+QGLPROC(glDisableVertexAttribArray, void, (GLuint index))
+QGLPROC(glVertexAttribPointer, void, (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer))
+QGLPROC(glBufferSubData, void, (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data))
+QGLPROC(glUniformMatrix4fv, void, (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value))
+QGLPROC(glUniform4fv, void, (GLint location, GLsizei count, const GLfloat *value))
+QGLPROC(glGetUniformLocation, GLuint, (GLuint program, const GLchar *name))
+QGLPROC(glUniform1i, void, (GLint location, GLint v0))
+// ---
+
 QGLPROC(glAccum, void, (GLenum op, GLfloat value))
 QGLPROC(glAlphaFunc, void, (GLenum func, GLclampf ref))
 QGLPROC(glAreTexturesResident, GLboolean, (GLsizei n, const GLuint *textures, GLboolean *residences))

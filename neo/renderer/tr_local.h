@@ -1289,6 +1289,7 @@ int		R_FindARBProgram( GLenum target, const char *program );
 
 typedef enum {
 	PROG_INVALID,
+	SPROG_INTERACTION,
 	VPROG_INTERACTION,
 	VPROG_ENVIRONMENT,
 	VPROG_BUMPY_ENVIRONMENT,

@@ -120,8 +120,10 @@ void GL_SelectTexture( int unit ) {
 		return;
 	}
 
-	qglActiveTextureARB( GL_TEXTURE0_ARB + unit );
-	qglClientActiveTextureARB( GL_TEXTURE0_ARB + unit );
+	//qglActiveTextureARB( GL_TEXTURE0_ARB + unit );
+	//qglClientActiveTextureARB( GL_TEXTURE0_ARB + unit );
+
+	qglActiveTexture(GL_TEXTURE0 + unit);
 
 	backEnd.glState.currenttmu = unit;
 }
