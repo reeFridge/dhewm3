@@ -285,13 +285,17 @@ R_CheckExtension
 =================
 */
 bool R_CheckExtension( const char *name ) {
-	if ( !strstr( glConfig.extensions_string, name ) ) {
-		common->Printf( "X..%s not found\n", name );
-		return false;
+	GLint n = 0;
+	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	for (GLint i = 0; i < n; i++) {
+		const char* ext = (const char*)qglGetStringi(GL_EXTENSIONS, i);
+		if (!strcmp(name, ext)) {
+			common->Printf( "...using %s\n", name );
+			return true;
+		}
 	}
-
-	common->Printf( "...using %s\n", name );
-	return true;
+	common->Printf( "X..%s not found\n", name );
+	return false;
 }
 
 /*
@@ -304,6 +308,7 @@ static void R_CheckPortableExtensions( void ) {
 	glConfig.glVersion = atof( glConfig.version_string );
 
 	// GL_ARB_multitexture
+	/*
 	glConfig.multitextureAvailable = R_CheckExtension( "GL_ARB_multitexture" );
 	if ( glConfig.multitextureAvailable ) {
 		qglMultiTexCoord2fARB = (void(APIENTRY *)(GLenum, GLfloat, GLfloat))GLimp_ExtensionPointer( "glMultiTexCoord2fARB" );
@@ -320,15 +325,25 @@ static void R_CheckPortableExtensions( void ) {
 		qglGetIntegerv( GL_MAX_TEXTURE_COORDS_ARB, (GLint *)&glConfig.maxTextureCoords );
 		qglGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS_ARB, (GLint *)&glConfig.maxTextureImageUnits );
 	}
+	*/
+	// core
+	glConfig.multitextureAvailable = true;
+	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (GLint *)&glConfig.maxTextureImageUnits);
 
 	// GL_ARB_texture_env_combine
-	glConfig.textureEnvCombineAvailable = R_CheckExtension( "GL_ARB_texture_env_combine" );
+	//glConfig.textureEnvCombineAvailable = R_CheckExtension( "GL_ARB_texture_env_combine" );
+	// mix
+	glConfig.textureEnvCombineAvailable = true;
 
 	// GL_ARB_texture_cube_map
-	glConfig.cubeMapAvailable = R_CheckExtension( "GL_ARB_texture_cube_map" );
+	//glConfig.cubeMapAvailable = R_CheckExtension( "GL_ARB_texture_cube_map" );
+	// GL_TEXTURE_CUBE_MAP
+	glConfig.cubeMapAvailable = true;
 
 	// GL_ARB_texture_env_dot3
-	glConfig.envDot3Available = R_CheckExtension( "GL_ARB_texture_env_dot3" );
+	//glConfig.envDot3Available = R_CheckExtension( "GL_ARB_texture_env_dot3" );
+	// dot + texture
+	glConfig.envDot3Available = true;
 
 	// GL_ARB_texture_env_add
 	glConfig.textureEnvAddAvailable = R_CheckExtension( "GL_ARB_texture_env_add" );
@@ -407,6 +422,7 @@ static void R_CheckPortableExtensions( void ) {
 	}
 
 	// ARB_vertex_buffer_object
+	/*
 	glConfig.ARBVertexBufferObjectAvailable = R_CheckExtension( "GL_ARB_vertex_buffer_object" );
 	if(glConfig.ARBVertexBufferObjectAvailable) {
 		qglBindBufferARB = (PFNGLBINDBUFFERARBPROC)GLimp_ExtensionPointer( "glBindBufferARB");
@@ -421,8 +437,12 @@ static void R_CheckPortableExtensions( void ) {
 		qglGetBufferParameterivARB = (PFNGLGETBUFFERPARAMETERIVARBPROC)GLimp_ExtensionPointer( "glGetBufferParameterivARB");
 		qglGetBufferPointervARB = (PFNGLGETBUFFERPOINTERVARBPROC)GLimp_ExtensionPointer( "glGetBufferPointervARB");
 	}
+	*/
+	// vbo
+	glConfig.ARBVertexBufferObjectAvailable = true;
 
 	// ARB_vertex_program
+	/*
 	glConfig.ARBVertexProgramAvailable = R_CheckExtension( "GL_ARB_vertex_program" );
 	if (glConfig.ARBVertexProgramAvailable) {
 		qglVertexAttribPointerARB = (PFNGLVERTEXATTRIBPOINTERARBPROC)GLimp_ExtensionPointer( "glVertexAttribPointerARB" );
@@ -434,8 +454,12 @@ static void R_CheckPortableExtensions( void ) {
 		qglProgramEnvParameter4fvARB = (PFNGLPROGRAMENVPARAMETER4FVARBPROC)GLimp_ExtensionPointer( "glProgramEnvParameter4fvARB" );
 		qglProgramLocalParameter4fvARB = (PFNGLPROGRAMLOCALPARAMETER4FVARBPROC)GLimp_ExtensionPointer( "glProgramLocalParameter4fvARB" );
 	}
+	*/
+	// glsl shaders
+	glConfig.ARBVertexProgramAvailable = true;
 
 	// ARB_fragment_program
+	/*
 	if ( r_inhibitFragmentProgram.GetBool() ) {
 		glConfig.ARBFragmentProgramAvailable = false;
 	} else {
@@ -448,6 +472,8 @@ static void R_CheckPortableExtensions( void ) {
 			qglProgramLocalParameter4fvARB = (PFNGLPROGRAMLOCALPARAMETER4FVARBPROC)GLimp_ExtensionPointer( "glProgramLocalParameter4fvARB" );
 		}
 	}
+	*/
+	glConfig.ARBFragmentProgramAvailable = true;
 
 	// check for minimum set
 	if ( !glConfig.multitextureAvailable || !glConfig.textureEnvCombineAvailable || !glConfig.cubeMapAvailable
@@ -695,7 +721,6 @@ void R_InitOpenGL( void ) {
 	glConfig.vendor_string = (const char *)qglGetString(GL_VENDOR);
 	glConfig.renderer_string = (const char *)qglGetString(GL_RENDERER);
 	glConfig.version_string = (const char *)qglGetString(GL_VERSION);
-	glConfig.extensions_string = (const char *)qglGetString(GL_EXTENSIONS);
 
 	// OpenGL driver constants
 	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &temp );

@@ -101,6 +101,20 @@ void RB_DrawElementsWithCounters( const srfTriangles_t *tri ) {
 		if ( r_useIndexBuffers.GetBool() ) {
 			vertexCache.UnbindIndex();
 		}
+
+		/*
+		GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
+
+		//common->Printf("verts: %d\n", tri->numVerts);
+		qglUseProgram(shader);
+		qglBindVertexArray(vertexCache.test_vao);
+		qglDrawArrays(GL_TRIANGLES, 0, 3);
+		qglBindVertexArray(0);
+
+		//qglDeleteVertexArrays(1, &vao);
+		//qglDeleteBuffers(1, &vbo);
+		*/
+
 		qglDrawElements( GL_TRIANGLES,
 						r_singleTriangle.GetBool() ? 3 : tri->numIndexes,
 						GL_INDEX_TYPE,
@@ -147,6 +161,7 @@ Sets texcoord and vertex pointers
 */
 void RB_RenderTriangleSurface( const srfTriangles_t *tri ) {
 	if ( !tri->ambientCache ) {
+		common->Printf("call DrawElementsImmediate\n");
 		RB_DrawElementsImmediate( tri );
 		return;
 	}
@@ -364,9 +379,11 @@ void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStag
 	float	matrix[16];
 
 	RB_GetShaderTextureMatrix( shaderRegisters, texture, matrix );
+	/*
 	qglMatrixMode( GL_TEXTURE );
 	qglLoadMatrixf( matrix );
 	qglMatrixMode( GL_MODELVIEW );
+	*/
 }
 
 /*
@@ -555,9 +572,9 @@ to actually render the visible surfaces for this view
 */
 void RB_BeginDrawingView (void) {
 	// set the modelview matrix for the viewer
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadMatrixf( backEnd.viewDef->projectionMatrix );
-	qglMatrixMode(GL_MODELVIEW);
+	//qglMatrixMode(GL_PROJECTION);
+	//qglLoadMatrixf( backEnd.viewDef->projectionMatrix );
+	//qglMatrixMode(GL_MODELVIEW);
 
 	// set the window clipping
 	qglViewport( tr.viewportOffset[0] + backEnd.viewDef->viewport.x1,

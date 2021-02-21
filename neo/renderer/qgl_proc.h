@@ -57,6 +57,9 @@ QGLPROC(glUniformMatrix4fv, void, (GLint location, GLsizei count, GLboolean tran
 QGLPROC(glUniform4fv, void, (GLint location, GLsizei count, const GLfloat *value))
 QGLPROC(glGetUniformLocation, GLuint, (GLuint program, const GLchar *name))
 QGLPROC(glUniform1i, void, (GLint location, GLint v0))
+QGLPROC(glGetStringi, const GLubyte *,(GLenum name, GLuint index))
+QGLPROC(glDeleteBuffers, void, (GLsizei n, const GLuint *buffers))
+QGLPROC(glDeleteVertexArrays, void, (GLsizei n, const GLuint *arrays))
 // ---
 
 QGLPROC(glAccum, void, (GLenum op, GLfloat value))

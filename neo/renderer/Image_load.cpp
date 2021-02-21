@@ -1739,12 +1739,12 @@ void idImage::Bind() {
 	} else if ( type == TT_CUBIC ) {
 		if ( tmu->currentCubeMap != texnum ) {
 			tmu->currentCubeMap = texnum;
-			qglBindTexture( GL_TEXTURE_CUBE_MAP_EXT, texnum );
+			//qglBindTexture( GL_TEXTURE_CUBE_MAP_EXT, texnum );
 		}
 	} else if ( type == TT_3D ) {
 		if ( tmu->current3DMap != texnum ) {
 			tmu->current3DMap = texnum;
-			qglBindTexture( GL_TEXTURE_3D, texnum );
+			//qglBindTexture( GL_TEXTURE_3D, texnum );
 		}
 	}
 
@@ -1802,13 +1802,13 @@ void idImage::BindFragment() {
 
 	// bind the texture
 	if ( type == TT_2D ) {
-		qglBindTexture( GL_TEXTURE_2D, texnum );
+		//qglBindTexture( GL_TEXTURE_2D, texnum );
 	} else if ( type == TT_RECT ) {
-		qglBindTexture( GL_TEXTURE_RECTANGLE_NV, texnum );
+		//qglBindTexture( GL_TEXTURE_RECTANGLE_NV, texnum );
 	} else if ( type == TT_CUBIC ) {
-		qglBindTexture( GL_TEXTURE_CUBE_MAP_EXT, texnum );
+		//qglBindTexture( GL_TEXTURE_CUBE_MAP_EXT, texnum );
 	} else if ( type == TT_3D ) {
-		qglBindTexture( GL_TEXTURE_3D, texnum );
+		//qglBindTexture( GL_TEXTURE_3D, texnum );
 	}
 }
 

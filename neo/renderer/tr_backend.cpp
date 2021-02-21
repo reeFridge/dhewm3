@@ -47,9 +47,9 @@ void RB_SetDefaultGLState( void ) {
 	qglColor4f (1,1,1,1);
 
 	// the vertex array is always enabled
-	qglEnableClientState( GL_VERTEX_ARRAY );
-	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	qglDisableClientState( GL_COLOR_ARRAY );
+	//qglEnableClientState( GL_VERTEX_ARRAY );
+	//qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	//qglDisableClientState( GL_COLOR_ARRAY );
 
 	//
 	// make sure our GL state vector is set correctly
@@ -63,8 +63,8 @@ void RB_SetDefaultGLState( void ) {
 	qglEnable( GL_BLEND );
 	qglEnable( GL_SCISSOR_TEST );
 	qglEnable( GL_CULL_FACE );
-	qglDisable( GL_LIGHTING );
-	qglDisable( GL_LINE_STIPPLE );
+	//qglDisable( GL_LIGHTING );
+	//qglDisable( GL_LINE_STIPPLE );
 	qglDisable( GL_STENCIL_TEST );
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
@@ -358,18 +358,18 @@ void GL_State( int stateBits ) {
 	if ( diff & GLS_ATEST_BITS ) {
 		switch ( stateBits & GLS_ATEST_BITS ) {
 		case 0:
-			qglDisable( GL_ALPHA_TEST );
+			//qglDisable( GL_ALPHA_TEST );
 			break;
 		case GLS_ATEST_EQ_255:
-			qglEnable( GL_ALPHA_TEST );
+			//qglEnable( GL_ALPHA_TEST );
 			qglAlphaFunc( GL_EQUAL, 1 );
 			break;
 		case GLS_ATEST_LT_128:
-			qglEnable( GL_ALPHA_TEST );
+			//qglEnable( GL_ALPHA_TEST );
 			qglAlphaFunc( GL_LESS, 0.5 );
 			break;
 		case GLS_ATEST_GE_128:
-			qglEnable( GL_ALPHA_TEST );
+			//qglEnable( GL_ALPHA_TEST );
 			qglAlphaFunc( GL_GEQUAL, 0.5 );
 			break;
 		default:

@@ -44,7 +44,8 @@ struct shaderProgDef_t {
 };
 
 static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
-	{ "interaction.vs", "interaction.fs", SPROG_INTERACTION, 0 }
+	{ "interaction.vs", "interaction.fs", SPROG_INTERACTION, 0 },
+	{ "default.vs", "default.fs", SPROG_DEFAULT, 0 }
 };
 
 GLuint R_LoadPartShader(idStr path, GLuint type) {
@@ -172,9 +173,9 @@ RB_ARB2_DrawInteraction
 void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 	GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
 
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, tr.primaryView->worldSpace.modelMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "view"), 1, GL_FALSE, tr.primaryView->worldSpace.modelViewMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, tr.primaryView->projectionMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "view"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
 
 	// load all the vertex program parameters
 	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_ORIGIN, din->localLightOrigin.ToFloatPtr() );
@@ -275,7 +276,6 @@ void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 
 	// draw it
 	RB_DrawElementsWithCounters( din->surf->geo );
-	qglUseProgram(0);
 }
 
 
@@ -344,20 +344,22 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 
 		// set the vertex pointers
 		idDrawVert	*ac = (idDrawVert *)vertexCache.Position( surf->geo->ambientCache );
-		qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
-		qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
-		qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
-		qglVertexAttribPointer( 8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->st.ToFloatPtr() );
-		qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->xyz.ToFloatPtr() );
-		qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color );
+		//qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+		//qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
+		//qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+		qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)offsetof(idDrawVert, st));
+		qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)0);
+		//qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color );
 		//qglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), ac->color );
 		//qglVertexPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->xyz.ToFloatPtr() );
 
 		// this may cause RB_ARB2_DrawInteraction to be exacuted multiple
 		// times with different colors and images if the surface or light have multiple layers
 		RB_CreateSingleDrawInteractions( surf, RB_ARB2_DrawInteraction );
+		qglBindVertexArray(0);
 	}
 
+	/*
 	qglDisableVertexAttribArray( 8 );
 	qglDisableVertexAttribArray( 9 );
 	qglDisableVertexAttribArray( 10 );
@@ -387,9 +389,11 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 
 	backEnd.glState.currenttmu = -1;
 	GL_SelectTexture( 0 );
+	*/
 
 	//qglDisable(GL_VERTEX_PROGRAM_ARB);
 	//qglDisable(GL_FRAGMENT_PROGRAM_ARB);
+	qglUseProgram(0);
 }
 
 
@@ -440,7 +444,7 @@ void RB_ARB2_DrawInteractions( void ) {
 			qglStencilFunc( GL_ALWAYS, 128, 255 );
 		}
 
-		/*
+/*
 		if ( r_useShadowVertexProgram.GetBool() ) {
 			qglEnable( GL_VERTEX_PROGRAM_ARB );
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
@@ -457,8 +461,7 @@ void RB_ARB2_DrawInteractions( void ) {
 			RB_StencilShadowPass( vLight->localShadows );
 			RB_ARB2_CreateDrawInteractions( vLight->globalInteractions );
 		}
-		*/
-
+*/
 		// translucent surfaces never get stencil shadowed
 		if ( r_skipTranslucent.GetBool() ) {
 			continue;
@@ -614,6 +617,9 @@ a text file if it hasn't already been loaded.
 ==================
 */
 int R_FindARBProgram( GLenum target, const char *program ) {
+	common->Printf( "mock FindARBProgram: %s\n", program );
+	return 0;
+	/**
 	int		i;
 	idStr	stripped = program;
 
@@ -645,6 +651,7 @@ int R_FindARBProgram( GLenum target, const char *program ) {
 	R_LoadARBProgram( i );
 
 	return progs[i].ident;
+	*/
 }
 
 /*
@@ -655,10 +662,12 @@ R_ReloadARBPrograms_f
 void R_ReloadARBPrograms_f( const idCmdArgs &args ) {
 	int		i;
 
+	/*
 	common->Printf( "----- R_ReloadARBPrograms -----\n" );
 	for ( i = 0 ; progs[i].name[0] ; i++ ) {
 		R_LoadARBProgram( i );
 	}
+	*/
 
 	common->Printf("----- R_ReloadShaderPrograms -----\n");
 	for (i = 0; shader_progs[i].vs_name[0] ; i++) {

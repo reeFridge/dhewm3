@@ -1290,6 +1290,7 @@ int		R_FindARBProgram( GLenum target, const char *program );
 typedef enum {
 	PROG_INVALID,
 	SPROG_INTERACTION,
+	SPROG_DEFAULT,
 	VPROG_INTERACTION,
 	VPROG_ENVIRONMENT,
 	VPROG_BUMPY_ENVIRONMENT,
@@ -1305,6 +1306,8 @@ typedef enum {
 	FPROG_GLASSWARP,
 	PROG_USER
 } program_t;
+
+GLuint  R_FindShaderProgram(program_t program);
 
 /*
 

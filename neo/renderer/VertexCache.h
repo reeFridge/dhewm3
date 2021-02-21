@@ -106,6 +106,8 @@ public:
 
 	// listVertexCache calls this
 	void			List();
+	GLuint test_vbo;
+	GLuint test_vao;
 
 private:
 	void			InitMemoryBlocks( int size );
