@@ -173,10 +173,6 @@ RB_ARB2_DrawInteraction
 void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 	GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
 
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "view"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
-
 	// load all the vertex program parameters
 	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_ORIGIN, din->localLightOrigin.ToFloatPtr() );
 	qglUniform4fv(qglGetUniformLocation(shader, "light_origin"), 1, din->localLightOrigin.ToFloatPtr());
@@ -291,7 +287,7 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 	}
 
 	// perform setup here that will be constant for all interactions
-	GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHMASK | backEnd.depthFunc );
+	//GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHMASK | backEnd.depthFunc );
 	GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
 
 	// bind the vertex program
@@ -303,6 +299,7 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 		//qglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, FPROG_INTERACTION );
 		qglUseProgram(shader);
 	}
+
 
 	//qglEnable(GL_VERTEX_PROGRAM_ARB);
 	//qglEnable(GL_FRAGMENT_PROGRAM_ARB);
@@ -338,28 +335,33 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 		globalImages->specularTableImage->Bind();
 	}
 
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "view"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
 
 	for ( ; surf ; surf=surf->nextOnLight ) {
 		// perform setup here that will not change over multiple interaction passes
+		if (surf->space) {
+			qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, surf->space->modelMatrix);
+		} else {
+			qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
+		}
 
 		// set the vertex pointers
 		idDrawVert	*ac = (idDrawVert *)vertexCache.Position( surf->geo->ambientCache );
-		//qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
-		//qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
-		//qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
-		qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)offsetof(idDrawVert, st));
-		qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)0);
-		//qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color );
+		qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+		qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
+		qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+		qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->st.ToFloatPtr());
+		qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->xyz.ToFloatPtr());
+		qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color);
 		//qglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), ac->color );
 		//qglVertexPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->xyz.ToFloatPtr() );
 
 		// this may cause RB_ARB2_DrawInteraction to be exacuted multiple
 		// times with different colors and images if the surface or light have multiple layers
 		RB_CreateSingleDrawInteractions( surf, RB_ARB2_DrawInteraction );
-		qglBindVertexArray(0);
 	}
 
-	/*
 	qglDisableVertexAttribArray( 8 );
 	qglDisableVertexAttribArray( 9 );
 	qglDisableVertexAttribArray( 10 );
@@ -369,6 +371,7 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 	//qglDisableClientState( GL_COLOR_ARRAY );
 
 	// disable features
+	/*
 	GL_SelectTextureNoClient( 6 );
 	globalImages->BindNull();
 
@@ -386,10 +389,11 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 
 	GL_SelectTextureNoClient( 1 );
 	globalImages->BindNull();
+	*/
+	globalImages->BindNull();
 
 	backEnd.glState.currenttmu = -1;
 	GL_SelectTexture( 0 );
-	*/
 
 	//qglDisable(GL_VERTEX_PROGRAM_ARB);
 	//qglDisable(GL_FRAGMENT_PROGRAM_ARB);
@@ -406,7 +410,7 @@ void RB_ARB2_DrawInteractions( void ) {
 	viewLight_t		*vLight;
 
 	GL_SelectTexture( 0 );
-	qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	//qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	//
 	// for each light, perform adding and shadowing
@@ -436,25 +440,32 @@ void RB_ARB2_DrawInteractions( void ) {
 					backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 					backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
 			}
-			qglClear( GL_STENCIL_BUFFER_BIT );
+			//qglClear( GL_STENCIL_BUFFER_BIT );
 		} else {
 			// no shadows, so no need to read or write the stencil buffer
 			// we might in theory want to use GL_ALWAYS instead of disabling
 			// completely, to satisfy the invarience rules
-			qglStencilFunc( GL_ALWAYS, 128, 255 );
+			//qglStencilFunc( GL_ALWAYS, 128, 255 );
 		}
 
-/*
 		if ( r_useShadowVertexProgram.GetBool() ) {
+			/*
 			qglEnable( GL_VERTEX_PROGRAM_ARB );
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
 			RB_StencilShadowPass( vLight->globalShadows );
+			*/
 			RB_ARB2_CreateDrawInteractions( vLight->localInteractions );
+			/*
 			qglEnable( GL_VERTEX_PROGRAM_ARB );
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
 			RB_StencilShadowPass( vLight->localShadows );
+			*/
 			RB_ARB2_CreateDrawInteractions( vLight->globalInteractions );
+			/*
 			qglDisable( GL_VERTEX_PROGRAM_ARB );	// if there weren't any globalInteractions, it would have stayed on
+			*/
+		}
+/*
 		} else {
 			RB_StencilShadowPass( vLight->globalShadows );
 			RB_ARB2_CreateDrawInteractions( vLight->localInteractions );
@@ -467,7 +478,7 @@ void RB_ARB2_DrawInteractions( void ) {
 			continue;
 		}
 
-		qglStencilFunc( GL_ALWAYS, 128, 255 );
+		//qglStencilFunc( GL_ALWAYS, 128, 255 );
 
 		backEnd.depthFunc = GLS_DEPTHFUNC_LESS;
 		RB_ARB2_CreateDrawInteractions( vLight->translucentInteractions );
@@ -476,10 +487,10 @@ void RB_ARB2_DrawInteractions( void ) {
 	}
 
 	// disable stencil shadow test
-	qglStencilFunc( GL_ALWAYS, 128, 255 );
+	//qglStencilFunc( GL_ALWAYS, 128, 255 );
 
 	GL_SelectTexture( 0 );
-	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	//qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
 //===================================================================================

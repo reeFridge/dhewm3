@@ -897,22 +897,22 @@ void idImage::GenerateCubeImage( const byte *pic[6], int size,
 	Bind();
 
 	// no other clamp mode makes sense
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	// set the minimize / maximize filtering
 	switch( filter ) {
 	case TF_DEFAULT:
-		qglTexParameterf(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_MIN_FILTER, globalImages->textureMinFilter );
-		qglTexParameterf(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_MAG_FILTER, globalImages->textureMaxFilter );
+		qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, globalImages->textureMinFilter );
+		qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, globalImages->textureMaxFilter );
 		break;
 	case TF_LINEAR:
-		qglTexParameterf(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameterf(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		break;
 	case TF_NEAREST:
-		qglTexParameterf(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		qglTexParameterf(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		break;
 	default:
 		common->FatalError( "R_CreateImage: bad texture filter" );
@@ -921,7 +921,7 @@ void idImage::GenerateCubeImage( const byte *pic[6], int size,
 	// upload the base level
 	// FIXME: support GL_COLOR_INDEX8_EXT?
 	for ( i = 0 ; i < 6 ; i++ ) {
-		qglTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT+i, 0, internalFormat, scaled_width, scaled_height, 0,
+		qglTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, internalFormat, scaled_width, scaled_height, 0,
 			GL_RGBA, GL_UNSIGNED_BYTE, pic[i] );
 	}
 
@@ -939,7 +939,7 @@ void idImage::GenerateCubeImage( const byte *pic[6], int size,
 		for ( i = 0 ; i < 6 ; i++ ) {
 			byte	*shrunken;
 
-			qglTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT+i, miplevel, internalFormat,
+			qglTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, miplevel, internalFormat,
 				scaled_width / 2, scaled_height / 2, 0,
 				GL_RGBA, GL_UNSIGNED_BYTE, shrunk[i] );
 
@@ -1712,6 +1712,7 @@ void idImage::Bind() {
 
 	// enable or disable apropriate texture modes
 	if ( tmu->textureType != type && ( backEnd.glState.currenttmu <	glConfig.maxTextureUnits ) ) {
+		/*
 		if ( tmu->textureType == TT_CUBIC ) {
 			qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
 		} else if ( tmu->textureType == TT_3D ) {
@@ -1727,6 +1728,7 @@ void idImage::Bind() {
 		} else if ( type == TT_2D ) {
 			qglEnable( GL_TEXTURE_2D );
 		}
+		*/
 		tmu->textureType = type;
 	}
 
@@ -1739,12 +1741,12 @@ void idImage::Bind() {
 	} else if ( type == TT_CUBIC ) {
 		if ( tmu->currentCubeMap != texnum ) {
 			tmu->currentCubeMap = texnum;
-			//qglBindTexture( GL_TEXTURE_CUBE_MAP_EXT, texnum );
+			qglBindTexture( GL_TEXTURE_CUBE_MAP, texnum );
 		}
 	} else if ( type == TT_3D ) {
 		if ( tmu->current3DMap != texnum ) {
 			tmu->current3DMap = texnum;
-			//qglBindTexture( GL_TEXTURE_3D, texnum );
+			qglBindTexture( GL_TEXTURE_3D, texnum );
 		}
 	}
 
@@ -1802,13 +1804,13 @@ void idImage::BindFragment() {
 
 	// bind the texture
 	if ( type == TT_2D ) {
-		//qglBindTexture( GL_TEXTURE_2D, texnum );
+		qglBindTexture( GL_TEXTURE_2D, texnum );
 	} else if ( type == TT_RECT ) {
-		//qglBindTexture( GL_TEXTURE_RECTANGLE_NV, texnum );
+		qglBindTexture( GL_TEXTURE_RECTANGLE, texnum );
 	} else if ( type == TT_CUBIC ) {
-		//qglBindTexture( GL_TEXTURE_CUBE_MAP_EXT, texnum );
+		qglBindTexture( GL_TEXTURE_CUBE_MAP, texnum );
 	} else if ( type == TT_3D ) {
-		//qglBindTexture( GL_TEXTURE_3D, texnum );
+		qglBindTexture( GL_TEXTURE_3D, texnum );
 	}
 }
 
@@ -1952,22 +1954,22 @@ void idImage::UploadScratch( const byte *data, int cols, int rows ) {
 
 			// upload the base level
 			for ( i = 0 ; i < 6 ; i++ ) {
-				qglTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT+i, 0, GL_RGB8, cols, rows, 0,
+				qglTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB8, cols, rows, 0,
 					GL_RGBA, GL_UNSIGNED_BYTE, data + cols*rows*4*i );
 			}
 		} else {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
 			for ( i = 0 ; i < 6 ; i++ ) {
-				qglTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT+i, 0, 0, 0, cols, rows,
+				qglTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, 0, 0, cols, rows,
 					GL_RGBA, GL_UNSIGNED_BYTE, data + cols*rows*4*i );
 			}
 		}
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		// no other clamp mode makes sense
-		qglTexParameteri(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		qglTexParameteri(GL_TEXTURE_CUBE_MAP_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	} else {
 		// otherwise, it is a 2D image
 		if ( type != TT_2D ) {

@@ -1232,8 +1232,8 @@ RENDER
 ============================================================
 */
 
-void RB_EnterWeaponDepthHack();
-void RB_EnterModelDepthHack( float depth );
+void RB_EnterWeaponDepthHack(float matrix[16]);
+void RB_EnterModelDepthHack(float depth, float matrix[16]);
 void RB_LeaveDepthHack();
 void RB_DrawElementsImmediate( const srfTriangles_t *tri );
 void RB_RenderTriangleSurface( const srfTriangles_t *tri );

@@ -77,7 +77,6 @@ RB_DrawElementsWithCounters
 ================
 */
 void RB_DrawElementsWithCounters( const srfTriangles_t *tri ) {
-
 	backEnd.pc.c_drawElements++;
 	backEnd.pc.c_drawIndexes += tri->numIndexes;
 	backEnd.pc.c_drawVertexes += tri->numVerts;
@@ -101,19 +100,6 @@ void RB_DrawElementsWithCounters( const srfTriangles_t *tri ) {
 		if ( r_useIndexBuffers.GetBool() ) {
 			vertexCache.UnbindIndex();
 		}
-
-		/*
-		GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
-
-		//common->Printf("verts: %d\n", tri->numVerts);
-		qglUseProgram(shader);
-		qglBindVertexArray(vertexCache.test_vao);
-		qglDrawArrays(GL_TRIANGLES, 0, 3);
-		qglBindVertexArray(0);
-
-		//qglDeleteVertexArrays(1, &vao);
-		//qglDeleteBuffers(1, &vbo);
-		*/
 
 		qglDrawElements( GL_TRIANGLES,
 						r_singleTriangle.GetBool() ? 3 : tri->numIndexes,
@@ -189,18 +175,12 @@ void RB_T_RenderTriangleSurface( const drawSurf_t *surf ) {
 RB_EnterWeaponDepthHack
 ===============
 */
-void RB_EnterWeaponDepthHack() {
+void RB_EnterWeaponDepthHack(float matrix[16]) {
 	qglDepthRange( 0, 0.5 );
-
-	float	matrix[16];
 
 	memcpy( matrix, backEnd.viewDef->projectionMatrix, sizeof( matrix ) );
 
 	matrix[14] *= 0.25;
-
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadMatrixf( matrix );
-	qglMatrixMode(GL_MODELVIEW);
 }
 
 /*
@@ -208,18 +188,12 @@ void RB_EnterWeaponDepthHack() {
 RB_EnterModelDepthHack
 ===============
 */
-void RB_EnterModelDepthHack( float depth ) {
+void RB_EnterModelDepthHack( float depth, float matrix[16]) {
 	qglDepthRange( 0.0f, 1.0f );
-
-	float	matrix[16];
 
 	memcpy( matrix, backEnd.viewDef->projectionMatrix, sizeof( matrix ) );
 
 	matrix[14] -= depth;
-
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadMatrixf( matrix );
-	qglMatrixMode(GL_MODELVIEW);
 }
 
 /*
@@ -229,10 +203,6 @@ RB_LeaveDepthHack
 */
 void RB_LeaveDepthHack() {
 	qglDepthRange( 0, 1 );
-
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadMatrixf( backEnd.viewDef->projectionMatrix );
-	qglMatrixMode(GL_MODELVIEW);
 }
 
 /*
@@ -256,17 +226,19 @@ void RB_RenderDrawSurfListWithFunction( drawSurf_t **drawSurfs, int numDrawSurfs
 		drawSurf = drawSurfs[i];
 
 		// change the matrix if needed
+		/* moved to fill depth buffer func @fridge
 		if ( drawSurf->space != backEnd.currentSpace ) {
-			qglLoadMatrixf( drawSurf->space->modelViewMatrix );
+			//qglLoadMatrixf( drawSurf->space->modelViewMatrix );
 		}
 
 		if ( drawSurf->space->weaponDepthHack ) {
-			RB_EnterWeaponDepthHack();
+			//RB_EnterWeaponDepthHack();
 		}
 
 		if ( drawSurf->space->modelDepthHack != 0.0f ) {
-			RB_EnterModelDepthHack( drawSurf->space->modelDepthHack );
+			//RB_EnterModelDepthHack( drawSurf->space->modelDepthHack );
 		}
+		*/
 
 		// change the scissor if needed
 		if ( r_useScissor.GetBool() && !backEnd.currentScissor.Equals( drawSurf->scissorRect ) ) {
@@ -302,15 +274,15 @@ void RB_RenderDrawSurfChainWithFunction( const drawSurf_t *drawSurfs,
 	for ( drawSurf = drawSurfs ; drawSurf ; drawSurf = drawSurf->nextOnLight ) {
 		// change the matrix if needed
 		if ( drawSurf->space != backEnd.currentSpace ) {
-			qglLoadMatrixf( drawSurf->space->modelViewMatrix );
+			//qglLoadMatrixf( drawSurf->space->modelViewMatrix );
 		}
 
 		if ( drawSurf->space->weaponDepthHack ) {
-			RB_EnterWeaponDepthHack();
+			//RB_EnterWeaponDepthHack();
 		}
 
 		if ( drawSurf->space->modelDepthHack ) {
-			RB_EnterModelDepthHack( drawSurf->space->modelDepthHack );
+			//RB_EnterModelDepthHack( drawSurf->space->modelDepthHack );
 		}
 
 		// change the scissor if needed
@@ -733,11 +705,11 @@ void RB_CreateSingleDrawInteractions( const drawSurf_t *surf, void (*DrawInterac
 
 	// hack depth range if needed
 	if ( surf->space->weaponDepthHack ) {
-		RB_EnterWeaponDepthHack();
+		//RB_EnterWeaponDepthHack();
 	}
 
 	if ( surf->space->modelDepthHack ) {
-		RB_EnterModelDepthHack( surf->space->modelDepthHack );
+		//RB_EnterModelDepthHack( surf->space->modelDepthHack );
 	}
 
 	inter.surf = surf;

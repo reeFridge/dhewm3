@@ -42,7 +42,6 @@ typedef enum {
 
 typedef struct vertCache_s {
 	GLuint			vbo;
-	GLuint			vao;
 	void			*virtMem;			// only one of vbo / virtMem will be set
 	bool			indexBuffer;		// holds indexes instead of vertexes
 
@@ -106,8 +105,6 @@ public:
 
 	// listVertexCache calls this
 	void			List();
-	GLuint test_vbo;
-	GLuint test_vao;
 
 private:
 	void			InitMemoryBlocks( int size );
@@ -144,6 +141,7 @@ private:
 											// staticHeaders.next is most recently used
 
 	int				frameBytes;				// for each of NUM_VERTEX_FRAMES frames
+	GLuint vao;
 };
 
 extern	idVertexCache	vertexCache;

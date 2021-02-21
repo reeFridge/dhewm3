@@ -126,16 +126,12 @@ void *idVertexCache::Position( vertCache_t *buffer ) {
 				common->Printf( "GL_ARRAY_BUFFER_ARB = %i (%i bytes)\n", buffer->vbo, buffer->size );
 			}
 		}
-		/*
+
 		if ( buffer->indexBuffer ) {
-			//qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, buffer->vbo );
-			//qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, buffer->vbo );
+			qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, buffer->vbo );
 		} else {
-			//qglBindBufferARB( GL_ARRAY_BUFFER_ARB, buffer->vbo );
-			//qglBindBuffer( GL_ARRAY_BUFFER, buffer->vbo );
+			qglBindBuffer( GL_ARRAY_BUFFER, buffer->vbo );
 		}
-		*/
-		qglBindVertexArray(buffer->vao);
 
 		return (void *)buffer->offset;
 	}
@@ -145,8 +141,7 @@ void *idVertexCache::Position( vertCache_t *buffer ) {
 }
 
 void idVertexCache::UnbindIndex() {
-	//qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, 0 );
-	//qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+	qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 }
 
 
@@ -190,24 +185,10 @@ void idVertexCache::Init() {
 	// set up the dynamic frame memory
 	frameBytes = FRAME_MEMORY_BYTES;
 	staticAllocTotal = 0;
-	//test
-	GLuint _vbo, _vao;
-	qglGenVertexArrays(1, &_vao);
-	qglGenBuffers(1, &_vbo);
-	qglBindVertexArray(_vao);
-	qglBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//qglBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)(tri->numVerts * sizeof(tri->verts[0])), (void*)tri->verts, GL_STATIC_DRAW );
-	//qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)0);
-	qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	qglEnableVertexAttribArray( 0 );
 
-	test_vbo = _vbo;
-	test_vao = _vao;
-	qglBindVertexArray(0);
-
-	//qglGenVertexArrays(1, &vao);
-	//qglBindVertexArray(vao);
+	// global vao
+	qglGenVertexArrays(1, &vao);
+	qglBindVertexArray(vao);
 
 	byte	*junk = (byte *)Mem_Alloc( frameBytes );
 	for ( int i = 0 ; i < NUM_VERTEX_FRAMES ; i++ ) {
@@ -275,8 +256,6 @@ void idVertexCache::Alloc( void *data, int size, vertCache_t **buffer, bool inde
 			block->prev->next = block;
 
 			if( !virtualMemory ) {
-				//qglGenBuffersARB( 1, & block->vbo );
-				qglGenVertexArrays(1, &block->vao);
 				qglGenBuffers(1, &block->vbo);
 			}
 		}
@@ -314,24 +293,14 @@ void idVertexCache::Alloc( void *data, int size, vertCache_t **buffer, bool inde
 
 	// copy the data
 	if ( block->vbo ) {
-		qglBindVertexArray(block->vao);
 		if ( indexBuffer ) {
-			//qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, block->vbo );
-			//qglBufferDataARB( GL_ELEMENT_ARRAY_BUFFER_ARB, (GLsizeiptrARB)size, data, GL_STATIC_DRAW_ARB );
-
 			qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, block->vbo );
 			qglBufferData( GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STATIC_DRAW );
 		} else {
-			//qglBindBufferARB( GL_ARRAY_BUFFER_ARB, block->vbo );
-
 			qglBindBuffer( GL_ARRAY_BUFFER, block->vbo );
 			if ( allocatingTempBuffer ) {
-				//qglBufferDataARB( GL_ARRAY_BUFFER_ARB, (GLsizeiptrARB)size, data, GL_STREAM_DRAW_ARB );
-
 				qglBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STREAM_DRAW );
 			} else {
-				//qglBufferDataARB( GL_ARRAY_BUFFER_ARB, (GLsizeiptrARB)size, data, GL_STATIC_DRAW_ARB );
-
 				qglBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STATIC_DRAW );
 			}
 		}
@@ -462,10 +431,8 @@ vertCache_t	*idVertexCache::AllocFrameTemp( void *data, int size ) {
 	block->vbo = tempBuffers[listNum]->vbo;
 
 	if ( block->vbo ) {
-		//qglBindBufferARB( GL_ARRAY_BUFFER_ARB, block->vbo );
-		//qglBufferSubDataARB( GL_ARRAY_BUFFER_ARB, block->offset, (GLsizeiptrARB)size, data );
-		//qglBindBuffer( GL_ARRAY_BUFFER, block->vbo );
-		//qglBufferSubData( GL_ARRAY_BUFFER, block->offset, (GLsizeiptr)size, data );
+		qglBindBuffer( GL_ARRAY_BUFFER, block->vbo );
+		qglBufferSubData( GL_ARRAY_BUFFER, block->offset, (GLsizeiptr)size, data );
 	} else {
 		SIMDProcessor->Memcpy( (byte *)block->virtMem + block->offset, data, size );
 	}
@@ -511,10 +478,8 @@ void idVertexCache::EndFrame() {
 	if( !virtualMemory ) {
 		// unbind vertex buffers so normal virtual memory will be used in case
 		// r_useVertexBuffers / r_useIndexBuffers
-		//qglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0 );
-		//qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, 0 );
-		//qglBindBuffer( GL_ARRAY_BUFFER, 0 );
-		//qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+		qglBindBuffer( GL_ARRAY_BUFFER, 0 );
+		qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 	}
 
 

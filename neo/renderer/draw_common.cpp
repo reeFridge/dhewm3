@@ -100,7 +100,7 @@ void RB_PrepareStageTexturing( const shaderStage_t *pStage,  const drawSurf_t *s
 		common->Printf("!!! TODO: TG_DIFFUSE_CUBE \n");
 		// convert to qglVertexAttribPointer @fridge
 		// qglTexCoordPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
-		qglVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(idDrawVert), (void*)offsetof(idDrawVert, normal));
+		qglVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(idDrawVert), (void*)ac->normal.ToFloatPtr());
 	}
 
 	if ( tg == TG_SKYBOX_CUBE || tg == TG_WOBBLESKY_CUBE ) {
@@ -226,13 +226,17 @@ void RB_PrepareStageTexturing( const shaderStage_t *pStage,  const drawSurf_t *s
 			GL_SelectTexture( 0 );
 
 			// convert to shader @fridge
-			/*
-			qglNormalPointer( GL_FLOAT, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
-			qglVertexAttribPointerARB( 10, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
-			qglVertexAttribPointerARB( 9, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+			//qglNormalPointer( GL_FLOAT, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+			qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+			//qglVertexAttribPointerARB( 10, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
+			//qglVertexAttribPointerARB( 9, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+			qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
+			qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
 
-			qglEnableVertexAttribArrayARB( 9 );
-			qglEnableVertexAttribArrayARB( 10 );
+			qglEnableVertexAttribArray( 9 );
+			qglEnableVertexAttribArray( 10 );
+			qglEnableVertexAttribArray( 11 );
+			/*
 			qglEnableClientState( GL_NORMAL_ARRAY );
 
 			// Program env 5, 6, 7, 8 have been set in RB_SetProgramEnvironmentSpace
@@ -245,8 +249,10 @@ void RB_PrepareStageTexturing( const shaderStage_t *pStage,  const drawSurf_t *s
 		} else {
 			// per-pixel reflection mapping without a normal map
 			// convert to shader @fridge
+			//qglNormalPointer( GL_FLOAT, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+			qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+			qglDisableVertexAttribArray( 11 );
 			/*
-			qglNormalPointer( GL_FLOAT, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
 			qglEnableClientState( GL_NORMAL_ARRAY );
 
 			qglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, FPROG_ENVIRONMENT );
@@ -265,7 +271,6 @@ RB_FinishStageTexturing
 */
 void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *surf, idDrawVert *ac ) {
 	common->Printf("!!! TODO: RB_FinishStageTexturing\n");
-	return;
 
 	// unset privatePolygonOffset if necessary
 	if ( pStage->privatePolygonOffset && !surf->material->TestMaterialFlag(MF_POLYGONOFFSET) ) {
@@ -274,18 +279,22 @@ void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *sur
 
 	if ( pStage->texture.texgen == TG_DIFFUSE_CUBE || pStage->texture.texgen == TG_SKYBOX_CUBE
 		|| pStage->texture.texgen == TG_WOBBLESKY_CUBE ) {
-		qglTexCoordPointer( 2, GL_FLOAT, sizeof( idDrawVert ), (void *)&ac->st );
+		qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)&ac->st);
 	}
 
 	if ( pStage->texture.texgen == TG_SCREEN ) {
+		/*
 		qglDisable( GL_TEXTURE_GEN_S );
 		qglDisable( GL_TEXTURE_GEN_T );
 		qglDisable( GL_TEXTURE_GEN_Q );
+		*/
 	}
 	if ( pStage->texture.texgen == TG_SCREEN2 ) {
+		/*
 		qglDisable( GL_TEXTURE_GEN_S );
 		qglDisable( GL_TEXTURE_GEN_T );
 		qglDisable( GL_TEXTURE_GEN_Q );
+		*/
 	}
 
 	if ( pStage->texture.texgen == TG_GLASSWARP ) {
@@ -295,12 +304,14 @@ void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *sur
 
 			GL_SelectTexture( 1 );
 			if ( pStage->texture.hasMatrix ) {
-				RB_LoadShaderTextureMatrix( surf->shaderRegisters, &pStage->texture );
+				//RB_LoadShaderTextureMatrix( surf->shaderRegisters, &pStage->texture );
 			}
+			/*
 			qglDisable( GL_TEXTURE_GEN_S );
 			qglDisable( GL_TEXTURE_GEN_T );
 			qglDisable( GL_TEXTURE_GEN_Q );
 			qglDisable( GL_FRAGMENT_PROGRAM_ARB );
+			*/
 			globalImages->BindNull();
 			GL_SelectTexture( 0 );
 		}
@@ -316,18 +327,24 @@ void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *sur
 				globalImages->BindNull();
 				GL_SelectTexture( 0 );
 
-				qglDisableVertexAttribArrayARB( 9 );
-				qglDisableVertexAttribArrayARB( 10 );
+				qglDisableVertexAttribArray( 9 );
+				qglDisableVertexAttribArray( 10 );
+				qglDisableVertexAttribArray( 11 );
 			} else {
 				// per-pixel reflection mapping without bump mapping
 			}
 
+			qglDisableVertexAttribArray( 11 );
+			/*
 			qglDisableClientState( GL_NORMAL_ARRAY );
 			qglDisable( GL_FRAGMENT_PROGRAM_ARB );
 			qglDisable( GL_VERTEX_PROGRAM_ARB );
 			// Fixme: Hack to get around an apparent bug in ATI drivers.  Should remove as soon as it gets fixed.
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, 0 );
+			*/
 		} else {
+			qglDisableVertexAttribArray( 11 );
+			/*
 			qglDisable( GL_TEXTURE_GEN_S );
 			qglDisable( GL_TEXTURE_GEN_T );
 			qglDisable( GL_TEXTURE_GEN_R );
@@ -339,13 +356,16 @@ void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *sur
 			qglMatrixMode( GL_TEXTURE );
 			qglLoadIdentity();
 			qglMatrixMode( GL_MODELVIEW );
+			*/
 		}
 	}
 
 	if ( pStage->texture.hasMatrix ) {
+		/*
 		qglMatrixMode( GL_TEXTURE );
 		qglLoadIdentity();
 		qglMatrixMode( GL_MODELVIEW );
+		*/
 	}
 }
 
@@ -364,7 +384,6 @@ RB_T_FillDepthBuffer
 ==================
 */
 void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
-	//common->Printf( "!!! TODO: RB_T_FillDepthBuffer\n" );
 	// update the clip plane if needed
 	if ( backEnd.viewDef->numClipPlanes && surf->space != backEnd.currentSpace ) {
 		GL_SelectTexture( 1 );
@@ -373,27 +392,24 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 
 		R_GlobalPlaneToLocal( surf->space->modelMatrix, backEnd.viewDef->clipPlanes[0], plane );
 		plane[3] += 0.5;	// the notch is in the middle
-		qglTexGenfv( GL_S, GL_OBJECT_PLANE, plane.ToFloatPtr() );
+		//qglTexGenfv( GL_S, GL_OBJECT_PLANE, plane.ToFloatPtr() );
 		GL_SelectTexture( 0 );
 	}
 
 	const idMaterial *shader = surf->material;
 	if ( !shader->IsDrawn() ) {
-		common->Printf( "RB_T_FillDepthBuffer: !shader->IsDrawn()\n" );
 		return;
 	}
 
 	// some deforms may disable themselves by setting numIndexes = 0
 	const srfTriangles_t *tri = surf->geo;
 	if ( !tri->numIndexes ) {
-		common->Printf( "RB_T_FillDepthBuffer: !tri->numIndexes\n" );
 		return;
 	}
 
 	// translucent surfaces don't put anything in the depth buffer and don't
 	// test against it, which makes them fail the mirror clip plane operation
 	if ( shader->Coverage() == MC_TRANSLUCENT ) {
-		common->Printf( "RB_T_FillDepthBuffer: shader->Coverage() == MC_TRANSLUCENT\n" );
 		return;
 	}
 
@@ -415,7 +431,6 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 		}
 	}
 	if ( stage == shader->GetNumStages() ) {
-		common->Printf( "RB_T_FillDepthBuffer: stage == shader->GetNumStages()\n" );
 		return;
 	}
 
@@ -430,7 +445,7 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	// gray for test @fridge
 	float color[4] = {0.5, 0.5, 0.5, 1};
 	if ( shader->GetSort() == SS_SUBVIEW ) {
-		GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO | GLS_DEPTHFUNC_LESS );
+		//GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO | GLS_DEPTHFUNC_LESS );
 		float c = ( 1.0 / backEnd.overBright );
 		color[0] = c;
 		color[1] = c;
@@ -438,8 +453,8 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	}
 
 	idDrawVert *ac = (idDrawVert *)vertexCache.Position( tri->ambientCache );
-	qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)0);
-	qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)offsetof(idDrawVert, st));
+	qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)ac->xyz.ToFloatPtr());
+	qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)ac->st.ToFloatPtr());
 	qglEnableVertexAttribArray(0);
 	qglEnableVertexAttribArray(8);
 	// find where set right program @fridge
@@ -449,6 +464,24 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, surf->space->modelMatrix);
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "view"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
+
+	/*
+	if ( surf->space != backEnd.currentSpace ) {
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "view"), 1, GL_FALSE, surf->space->modelViewMatrix);
+	}
+
+	if ( surf->space->weaponDepthHack ) {
+		float matrix[16];
+		RB_EnterWeaponDepthHack(matrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+	}
+
+	if ( surf->space->modelDepthHack != 0.0f ) {
+		float matrix[16];
+		RB_EnterModelDepthHack( surf->space->modelDepthHack, matrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+	}
+	*/
 
 	bool drawSolid = false;
 
@@ -490,7 +523,7 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 				continue;
 			}
 			// pass directly in shader
-			//qglColor4fv( color );
+			qglUniform4fv(qglGetUniformLocation(shader_prog, "color"), 1, color);
 
 			//qglAlphaFunc( GL_GREATER, regs[ pStage->alphaTestRegister ] );
 
@@ -524,7 +557,6 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 		RB_DrawElementsWithCounters( tri );
 	}
 
-
 	// reset polygon offset
 	if ( shader->TestMaterialFlag(MF_POLYGONOFFSET) ) {
 		qglDisable( GL_POLYGON_OFFSET_FILL );
@@ -536,6 +568,8 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	}
 
 	qglUseProgram(0);
+	qglDisableVertexAttribArray(0);
+	qglDisableVertexAttribArray(8);
 }
 
 /*
@@ -556,14 +590,14 @@ void RB_STD_FillDepthBuffer( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 	if ( backEnd.viewDef->numClipPlanes ) {
 		GL_SelectTexture( 1 );
 		globalImages->alphaNotchImage->Bind();
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-		qglEnable( GL_TEXTURE_GEN_S );
-		qglTexCoord2f( 1, 0.5 );
+		//qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+		//qglEnable( GL_TEXTURE_GEN_S );
+		//qglTexCoord2f( 1, 0.5 );
 	}
 
 	// the first texture will be used for alpha tested surfaces
 	GL_SelectTexture( 0 );
-	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	//qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	// decal surfaces may enable polygon offset
 	qglPolygonOffset( r_offsetFactor.GetFloat(), r_offsetUnits.GetFloat() );
@@ -579,10 +613,12 @@ void RB_STD_FillDepthBuffer( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 	RB_RenderDrawSurfListWithFunction( drawSurfs, numDrawSurfs, RB_T_FillDepthBuffer );
 
 	if ( backEnd.viewDef->numClipPlanes ) {
+		/*
 		GL_SelectTexture( 1 );
 		globalImages->BindNull();
 		qglDisable( GL_TEXTURE_GEN_S );
 		GL_SelectTexture( 0 );
+		*/
 	}
 
 }
@@ -775,11 +811,11 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 	}
 
 	if ( surf->space->weaponDepthHack ) {
-		RB_EnterWeaponDepthHack();
+		//RB_EnterWeaponDepthHack();
 	}
 
 	if ( surf->space->modelDepthHack != 0.0f ) {
-		RB_EnterModelDepthHack( surf->space->modelDepthHack );
+		//RB_EnterModelDepthHack( surf->space->modelDepthHack );
 	}
 
 	idDrawVert *ac = (idDrawVert *)vertexCache.Position( tri->ambientCache );
@@ -1760,11 +1796,6 @@ void	RB_STD_DrawView( void ) {
 
 	drawSurfs = (drawSurf_t **)&backEnd.viewDef->drawSurfs[0];
 	numDrawSurfs = backEnd.viewDef->numDrawSurfs;
-	//qglDisable(GL_DEPTH_TEST);
-	//qglDisable(GL_BLEND);
-	//qglDisable(GL_SCISSOR_TEST);
-	qglDisable(GL_CULL_FACE);
-	//qglDisable(GL_STENCIL_TEST);
 
 	// clear the z buffer, set the projection matrix, etc
 	RB_BeginDrawingView();
@@ -1784,7 +1815,7 @@ void	RB_STD_DrawView( void ) {
 	}
 
 	// disable stencil shadow test
-	qglStencilFunc( GL_ALWAYS, 128, 255 );
+	//qglStencilFunc( GL_ALWAYS, 128, 255 );
 
 	// uplight the entire screen to crutch up not having better blending range
 	RB_STD_LightScale();

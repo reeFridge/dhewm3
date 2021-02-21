@@ -995,7 +995,7 @@ static const filterName_t textureFilters[] = {
 			texEnum = GL_TEXTURE_3D;
 			break;
 		case TT_CUBIC:
-			texEnum = GL_TEXTURE_CUBE_MAP_EXT;
+			texEnum = GL_TEXTURE_CUBE_MAP;
 			break;
 		}
 
@@ -1939,6 +1939,7 @@ void idImageManager::BindNull() {
 
 	tmu = &backEnd.glState.tmu[backEnd.glState.currenttmu];
 
+	/*
 	if ( tmu->textureType == TT_CUBIC ) {
 		qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
 	} else if ( tmu->textureType == TT_3D ) {
@@ -1946,6 +1947,7 @@ void idImageManager::BindNull() {
 	} else if ( tmu->textureType == TT_2D ) {
 		qglDisable( GL_TEXTURE_2D );
 	}
+	*/
 	tmu->textureType = TT_DISABLED;
 }
 
