@@ -445,7 +445,7 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	// gray for test @fridge
 	float color[4] = {0.5, 0.5, 0.5, 1};
 	if ( shader->GetSort() == SS_SUBVIEW ) {
-		//GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO | GLS_DEPTHFUNC_LESS );
+		GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO | GLS_DEPTHFUNC_LESS );
 		float c = ( 1.0 / backEnd.overBright );
 		color[0] = c;
 		color[1] = c;
@@ -457,19 +457,21 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)ac->st.ToFloatPtr());
 	qglEnableVertexAttribArray(0);
 	qglEnableVertexAttribArray(8);
-	// find where set right program @fridge
 	GLuint shader_prog = R_FindShaderProgram(SPROG_DEFAULT);
 	qglUseProgram(shader_prog);
 
-	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, surf->space->modelMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "view"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
+	// default matrices
+	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
 
-	/*
-	if ( surf->space != backEnd.currentSpace ) {
-		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "view"), 1, GL_FALSE, surf->space->modelViewMatrix);
+	if ( surf->space ) {
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, surf->space->modelMatrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, surf->space->modelViewMatrix);
 	}
 
+	// Is it still needed? @fridge
+	/*
 	if ( surf->space->weaponDepthHack ) {
 		float matrix[16];
 		RB_EnterWeaponDepthHack(matrix);
@@ -482,7 +484,6 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
 	*/
-
 	bool drawSolid = false;
 
 	if ( shader->Coverage() == MC_OPAQUE ) {

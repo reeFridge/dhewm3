@@ -362,15 +362,15 @@ void GL_State( int stateBits ) {
 			break;
 		case GLS_ATEST_EQ_255:
 			//qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_EQUAL, 1 );
+			//qglAlphaFunc( GL_EQUAL, 1 );
 			break;
 		case GLS_ATEST_LT_128:
 			//qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_LESS, 0.5 );
+			//qglAlphaFunc( GL_LESS, 0.5 );
 			break;
 		case GLS_ATEST_GE_128:
 			//qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_GEQUAL, 0.5 );
+			//qglAlphaFunc( GL_GEQUAL, 0.5 );
 			break;
 		default:
 			assert( 0 );

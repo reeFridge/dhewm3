@@ -240,8 +240,8 @@ void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 	// set the constant colors
 	//qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 0, din->diffuseColor.ToFloatPtr() );
 	//qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 1, din->specularColor.ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "diffuse_color"), 1, din->diffuseColor.ToFloatPtr());
-	qglUniform4fv(qglGetUniformLocation(shader, "specular_color"), 1, din->specularColor.ToFloatPtr());
+	qglUniform4fv(qglGetUniformLocation(shader, "diffuse_color_const"), 1, din->diffuseColor.ToFloatPtr());
+	qglUniform4fv(qglGetUniformLocation(shader, "specular_color_const"), 1, din->specularColor.ToFloatPtr());
 
 	// set the textures
 
@@ -335,16 +335,13 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 		globalImages->specularTableImage->Bind();
 	}
 
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "view"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
+	// default matrices
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
 	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
 
 	for ( ; surf ; surf=surf->nextOnLight ) {
 		// perform setup here that will not change over multiple interaction passes
-		if (surf->space) {
-			qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, surf->space->modelMatrix);
-		} else {
-			qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
-		}
 
 		// set the vertex pointers
 		idDrawVert	*ac = (idDrawVert *)vertexCache.Position( surf->geo->ambientCache );

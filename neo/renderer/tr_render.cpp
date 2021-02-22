@@ -688,10 +688,12 @@ void RB_CreateSingleDrawInteractions( const drawSurf_t *surf, void (*DrawInterac
 		return;
 	}
 
+	GLuint shader_prog = R_FindShaderProgram(SPROG_INTERACTION);
 	// change the matrix and light projection vectors if needed
-	if ( surf->space != backEnd.currentSpace ) {
+	if ( surf->space ) {
 		backEnd.currentSpace = surf->space;
-		qglLoadMatrixf( surf->space->modelViewMatrix );
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, surf->space->modelMatrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, surf->space->modelViewMatrix);
 	}
 
 	// change the scissor if needed
@@ -702,15 +704,19 @@ void RB_CreateSingleDrawInteractions( const drawSurf_t *surf, void (*DrawInterac
 			backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 			backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
 	}
-
-	// hack depth range if needed
+/*
 	if ( surf->space->weaponDepthHack ) {
-		//RB_EnterWeaponDepthHack();
+		float matrix[16];
+		RB_EnterWeaponDepthHack(matrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
 
-	if ( surf->space->modelDepthHack ) {
-		//RB_EnterModelDepthHack( surf->space->modelDepthHack );
+	if ( surf->space->modelDepthHack != 0.0f ) {
+		float matrix[16];
+		RB_EnterModelDepthHack( surf->space->modelDepthHack, matrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
+	*/
 
 	inter.surf = surf;
 	inter.lightFalloffImage = vLight->falloffImage;
