@@ -24,11 +24,13 @@ in vec4 tc_diffuse_map;
 
 out vec4 FragColor;
 
-vec3 calcSpecularComponent(vec3 specular, vec3 lightDirection, vec3 norm)
+vec3 calcSpecularComponent(vec3 specular, vec3 norm)
 {
+	vec3 lightDirection = normalize(LightPos - FragPos);
 	vec3 viewDirection = normalize(ViewPos - FragPos);
-	vec3 reflectDirection = reflect(-lightDirection, norm);
-	float spec = max(dot(viewDirection, reflectDirection), 0.0);
+	vec3 halfwayDir = normalize(viewDirection + lightDirection);
+	float shininess = 16.0;
+	float spec = pow(max(dot(halfwayDir, norm), 0.0), shininess);
 	vec3 specularIntensity = texture(t_specular_map, TexCoords).rgb * 2;
 	vec3 specularColor = (specularIntensity * spec) * specular;
 
@@ -48,8 +50,7 @@ void main()
 		light = light * falloff;
 	}
 
-	vec3 light_direction = normalize(LightPos - FragPos);
-	vec3 specular_color = calcSpecularComponent(specular_color_const.xyz, light_direction, normal);
+	vec3 specular_color = calcSpecularComponent(specular_color_const.xyz, normal);
 
 	vec3 diffuse_color = texture(t_diffuse_map, tc_diffuse_map.xy).xyz * diffuse_color_const.xyz;
 	vec3 color = specular_color + diffuse_color;
