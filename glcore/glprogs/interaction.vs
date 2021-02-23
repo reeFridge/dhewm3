@@ -28,22 +28,26 @@ uniform vec4 specular_matrix_s;
 uniform vec4 specular_matrix_t;
 
 out vec4 ResultColor;
+out vec3 FragPos;
+out vec3 ViewPos;
+out vec3 LightPos;
+out vec2 TexCoords;
 
 out vec4 tc_cube_map;
 out vec4 tc_bump_map;
 out vec4 tc_falloff;
 out vec4 tc_projection;
 out vec4 tc_diffuse_map;
-out vec4 tc_specular_map;
-out vec4 tc_specular_lookup;
 
 void main()
 {
 	vec4 vertex_position = proj * modelView * vec4(aPos, 1.0);
 
 	vec4 defaultTexCoord = vec4(0, 0.5, 0, 1);
-	vec3 vec_light = normalize(light_origin.xyz - aPos);
-	vec3 vec_view = normalize(view_origin.xyz - aPos);
+	FragPos = vec3(model * vec4(aPos, 1.0));
+	ViewPos = vec3(model * vec4(view_origin.xyz, 1.0));
+	LightPos = vec3(model * vec4(light_origin.xyz, 1.0));
+	TexCoords = aTexCoords;
 
 	tc_cube_map = vec4(0);
 	vec3 vl = light_origin.xyz - aPos;
@@ -65,20 +69,9 @@ void main()
 	tc_projection.y = dot(p, light_project_t);
 	tc_projection.w = dot(p, light_project_q);
 
-	tc_specular_map = defaultTexCoord;
-	tc_specular_map.x = dot(tc, specular_matrix_s);
-	tc_specular_map.y = dot(tc, specular_matrix_t);
-
 	tc_diffuse_map = defaultTexCoord;
 	tc_diffuse_map.x = dot(tc, diffuse_matrix_s);
 	tc_diffuse_map.y = dot(tc, diffuse_matrix_t);
-
-	vec3 half_angle = vec_light + vec_view;
-
-	tc_specular_lookup = vec4(0);
-	tc_specular_lookup.x = dot(aNormal,   half_angle);
-	tc_specular_lookup.y = dot(aTangent0, half_angle);
-	tc_specular_lookup.z = dot(aTangent1, half_angle);
 
 	gl_Position = vertex_position;
 	ResultColor = aColor * color_modulate + color_add;

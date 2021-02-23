@@ -704,19 +704,17 @@ void RB_CreateSingleDrawInteractions( const drawSurf_t *surf, void (*DrawInterac
 			backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 			backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
 	}
-/*
 	if ( surf->space->weaponDepthHack ) {
 		float matrix[16];
 		RB_EnterWeaponDepthHack(matrix);
-		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
 
 	if ( surf->space->modelDepthHack != 0.0f ) {
 		float matrix[16];
 		RB_EnterModelDepthHack( surf->space->modelDepthHack, matrix);
-		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
-	*/
 
 	inter.surf = surf;
 	inter.lightFalloffImage = vLight->falloffImage;

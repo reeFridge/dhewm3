@@ -469,19 +469,18 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	}
 
 	// Is it still needed? @fridge
-	/*
 	if ( surf->space->weaponDepthHack ) {
 		float matrix[16];
 		RB_EnterWeaponDepthHack(matrix);
-		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
 
 	if ( surf->space->modelDepthHack != 0.0f ) {
 		float matrix[16];
 		RB_EnterModelDepthHack( surf->space->modelDepthHack, matrix);
-		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
 	}
-	*/
+
 	bool drawSolid = false;
 
 	if ( shader->Coverage() == MC_OPAQUE ) {
