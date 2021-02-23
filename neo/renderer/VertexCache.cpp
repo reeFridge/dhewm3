@@ -146,11 +146,6 @@ void idVertexCache::UnbindIndex() {
 
 
 //================================================================================
-float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	0.5f, -0.5f, 0.0f,
-	0.0f,  0.5f, 0.0f
-};
 
 /*
 ===========
@@ -226,7 +221,8 @@ idVertexCache::Shutdown
 */
 void idVertexCache::Shutdown() {
 //	PurgeAll();	// !@#: also purge the temp buffers
-
+	qglBindVertexArray(0);
+	qglDeleteVertexArrays(1, &vao);
 	headerAllocator.Shutdown();
 }
 

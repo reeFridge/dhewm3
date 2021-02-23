@@ -270,8 +270,6 @@ RB_FinishStageTexturing
 ================
 */
 void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *surf, idDrawVert *ac ) {
-	common->Printf("!!! TODO: RB_FinishStageTexturing\n");
-
 	// unset privatePolygonOffset if necessary
 	if ( pStage->privatePolygonOffset && !surf->material->TestMaterialFlag(MF_POLYGONOFFSET) ) {
 		qglDisable( GL_POLYGON_OFFSET_FILL );
@@ -443,7 +441,7 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	// subviews will just down-modulate the color buffer by overbright
 	// others just draw black
 	// gray for test @fridge
-	float color[4] = {0.5, 0.5, 0.5, 1};
+	float color[4] = {0, 0, 0, 1};
 	if ( shader->GetSort() == SS_SUBVIEW ) {
 		GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO | GLS_DEPTHFUNC_LESS );
 		float c = ( 1.0 / backEnd.overBright );
@@ -492,13 +490,13 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 
 	// we may have multiple alpha tested stages
 	if ( shader->Coverage() == MC_PERFORATED ) {
-		common->Printf( "RB_T_FillDepthBuffer: shader->Coverage() == MC_PERFORATED\n" );
 		// if the only alpha tested stages are condition register omitted,
 		// draw a normal opaque surface
 		bool	didDraw = false;
 
 		// use discard in shader instead
 		//qglEnable( GL_ALPHA_TEST );
+		qglUniform1i(qglGetUniformLocation(shader_prog, "alpha_test"), 1);
 		// perforated surfaces may have multiple alpha tested stages
 		for ( int stage = 0; stage < shader->GetNumStages() ; stage++ ) {
 			const shaderStage_t *pStage = shader->GetStage(stage);
@@ -526,6 +524,7 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 			// pass directly in shader
 			qglUniform4fv(qglGetUniformLocation(shader_prog, "color"), 1, color);
 
+			qglUniform1f(qglGetUniformLocation(shader_prog, "alpha_test_value"), regs[pStage->alphaTestRegister]);
 			//qglAlphaFunc( GL_GREATER, regs[ pStage->alphaTestRegister ] );
 
 			// bind the texture
@@ -542,6 +541,7 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 			RB_FinishStageTexturing( pStage, surf, ac );
 		}
 		// use discard in shader
+		qglUniform1i(qglGetUniformLocation(shader_prog, "alpha_test"), 0);
 		//qglDisable( GL_ALPHA_TEST );
 		if ( !didDraw ) {
 			drawSolid = true;
@@ -1126,6 +1126,9 @@ the shadow volumes face INSIDE
 static void RB_T_Shadow( const drawSurf_t *surf ) {
 	const srfTriangles_t	*tri;
 
+	GLuint shader = R_FindShaderProgram(SPROG_SHADOW);
+	qglUseProgram(shader);
+
 	// set the light position if we are using a vertex program to project the rear surfaces
 	if ( tr.backEndRendererHasVertexPrograms && r_useShadowVertexProgram.GetBool()
 		&& surf->space != backEnd.currentSpace ) {
@@ -1133,7 +1136,8 @@ static void RB_T_Shadow( const drawSurf_t *surf ) {
 
 		R_GlobalPointToLocal( surf->space->modelMatrix, backEnd.vLight->globalLightOrigin, localLight.ToVec3() );
 		localLight.w = 0.0f;
-		qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_ORIGIN, localLight.ToFloatPtr() );
+		qglUniform4fv(qglGetUniformLocation(shader, "light_origin"), 1, localLight.ToFloatPtr());
+		// qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_ORIGIN, localLight.ToFloatPtr() );
 	}
 
 	tri = surf->geo;
@@ -1142,7 +1146,21 @@ static void RB_T_Shadow( const drawSurf_t *surf ) {
 		return;
 	}
 
-	qglVertexPointer( 4, GL_FLOAT, sizeof( shadowCache_t ), vertexCache.Position(tri->shadowCache) );
+	// default matrices
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
+
+	if ( surf->space ) {
+		qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, surf->space->modelMatrix);
+		qglUniformMatrix4fv(qglGetUniformLocation(shader, "modelView"), 1, GL_FALSE, surf->space->modelViewMatrix);
+	}
+
+	// vec4
+	shadowCache_t* sc = (shadowCache_t*)vertexCache.Position(tri->shadowCache);
+	qglVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(shadowCache_t), (void*)sc->xyz.ToFloatPtr());
+	qglEnableVertexAttribArray(0);
+	//qglVertexPointer( 4, GL_FLOAT, sizeof( shadowCache_t ), vertexCache.Position(tri->shadowCache) );
 
 	// we always draw the sil planes, but we may not need to draw the front or rear caps
 	int	numIndexes;
@@ -1175,33 +1193,40 @@ static void RB_T_Shadow( const drawSurf_t *surf ) {
 
 	// set depth bounds
 	if( glConfig.depthBoundsTestAvailable && r_useDepthBoundsTest.GetBool() ) {
-		qglDepthBoundsEXT( surf->scissorRect.zmin, surf->scissorRect.zmax );
+		//qglDepthBoundsEXT( surf->scissorRect.zmin, surf->scissorRect.zmax );
 	}
 
 	// debug visualization
 	if ( r_showShadows.GetInteger() ) {
 		if ( r_showShadows.GetInteger() == 3 ) {
 			if ( external ) {
-				qglColor3f( 0.1/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
+				qglUniform3f(qglGetUniformLocation(shader, "color"), 0.1/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright);
+				//qglColor3f( 0.1/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
 			} else {
 				// these are the surfaces that require the reverse
-				qglColor3f( 1/backEnd.overBright, 0.1/backEnd.overBright, 0.1/backEnd.overBright );
+				//qglColor3f( 1/backEnd.overBright, 0.1/backEnd.overBright, 0.1/backEnd.overBright );
+				qglUniform3f(qglGetUniformLocation(shader, "color"), 1/backEnd.overBright, 0.1/backEnd.overBright, 0.1/backEnd.overBright );
 			}
 		} else {
 			// draw different color for turboshadows
 			if ( surf->geo->shadowCapPlaneBits & SHADOW_CAP_INFINITE ) {
 				if ( numIndexes == tri->numIndexes ) {
-					qglColor3f( 1/backEnd.overBright, 0.1/backEnd.overBright, 0.1/backEnd.overBright );
+					//qglColor3f( 1/backEnd.overBright, 0.1/backEnd.overBright, 0.1/backEnd.overBright );
+					qglUniform3f(qglGetUniformLocation(shader, "color"), 1/backEnd.overBright, 0.1/backEnd.overBright, 0.1/backEnd.overBright );
 				} else {
-					qglColor3f( 1/backEnd.overBright, 0.4/backEnd.overBright, 0.1/backEnd.overBright );
+					//qglColor3f( 1/backEnd.overBright, 0.4/backEnd.overBright, 0.1/backEnd.overBright );
+					qglUniform3f(qglGetUniformLocation(shader, "color"), 1/backEnd.overBright, 0.4/backEnd.overBright, 0.1/backEnd.overBright );
 				}
 			} else {
 				if ( numIndexes == tri->numIndexes ) {
-					qglColor3f( 0.1/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
+					//qglColor3f( 0.1/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
+					qglUniform3f(qglGetUniformLocation(shader, "color"), 0.1/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
 				} else if ( numIndexes == tri->numShadowIndexesNoFrontCaps ) {
-					qglColor3f( 0.1/backEnd.overBright, 1/backEnd.overBright, 0.6/backEnd.overBright );
+					//qglColor3f( 0.1/backEnd.overBright, 1/backEnd.overBright, 0.6/backEnd.overBright );
+					qglUniform3f(qglGetUniformLocation(shader, "color"), 0.1/backEnd.overBright, 1/backEnd.overBright, 0.6/backEnd.overBright );
 				} else {
-					qglColor3f( 0.6/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
+					//qglColor3f( 0.6/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
+					qglUniform3f(qglGetUniformLocation(shader, "color"), 0.6/backEnd.overBright, 1/backEnd.overBright, 0.1/backEnd.overBright );
 				}
 			}
 		}
@@ -1298,6 +1323,8 @@ static void RB_T_Shadow( const drawSurf_t *surf ) {
 			}
 		}
 	}
+	qglDisableVertexAttribArray(0);
+	qglUseProgram(0);
 }
 
 /*
@@ -1318,9 +1345,10 @@ void RB_StencilShadowPass( const drawSurf_t *drawSurfs ) {
 	}
 
 	globalImages->BindNull();
-	qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	//qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	// for visualizing the shadows
+	//r_showShadows.SetInteger(2);
 	if ( r_showShadows.GetInteger() ) {
 		if ( r_showShadows.GetInteger() == 2 ) {
 			// draw filled in
@@ -1342,7 +1370,7 @@ void RB_StencilShadowPass( const drawSurf_t *drawSurfs ) {
 	qglStencilFunc( GL_ALWAYS, 1, 255 );
 
 	if ( glConfig.depthBoundsTestAvailable && r_useDepthBoundsTest.GetBool() ) {
-		qglEnable( GL_DEPTH_BOUNDS_TEST_EXT );
+		//qglEnable( GL_DEPTH_BOUNDS_TEST_EXT );
 	}
 
 	RB_RenderDrawSurfChainWithFunction( drawSurfs, RB_T_Shadow );
@@ -1354,10 +1382,10 @@ void RB_StencilShadowPass( const drawSurf_t *drawSurfs ) {
 	}
 
 	if ( glConfig.depthBoundsTestAvailable && r_useDepthBoundsTest.GetBool() ) {
-		qglDisable( GL_DEPTH_BOUNDS_TEST_EXT );
+		//qglDisable( GL_DEPTH_BOUNDS_TEST_EXT );
 	}
 
-	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	//qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	qglStencilFunc( GL_GEQUAL, 128, 255 );
 	qglStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
@@ -1744,11 +1772,13 @@ void RB_STD_LightScale( void ) {
 	}
 
 	// full screen blends
+	/*
 	qglLoadIdentity();
 	qglMatrixMode( GL_PROJECTION );
 	qglPushMatrix();
 	qglLoadIdentity();
 	qglOrtho( 0, 1, 0, 1, -1, 1 );
+	*/
 
 	GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_SRC_COLOR );
 	GL_Cull( CT_TWO_SIDED );	// so mirror views also get it
@@ -1763,21 +1793,23 @@ void RB_STD_LightScale( void ) {
 		if ( f > 1 ) {
 			f = 1;
 		}
-		qglColor3f( f, f, f );
+		//qglColor3f( f, f, f );
 		v = v * f * 2;
 
+		/*
 		qglBegin( GL_QUADS );
 		qglVertex2f( 0,0 );
 		qglVertex2f( 0,1 );
 		qglVertex2f( 1,1 );
 		qglVertex2f( 1,0 );
 		qglEnd();
+		*/
 	}
 
 
-	qglPopMatrix();
+	//qglPopMatrix();
 	qglEnable( GL_DEPTH_TEST );
-	qglMatrixMode( GL_MODELVIEW );
+	//qglMatrixMode( GL_MODELVIEW );
 	GL_Cull( CT_FRONT_SIDED );
 }
 
@@ -1816,9 +1848,10 @@ void	RB_STD_DrawView( void ) {
 	}
 
 	// disable stencil shadow test
-	//qglStencilFunc( GL_ALWAYS, 128, 255 );
+	qglStencilFunc( GL_ALWAYS, 128, 255 );
 
 	// uplight the entire screen to crutch up not having better blending range
+	// we are here now! @fridge
 	RB_STD_LightScale();
 	return;
 

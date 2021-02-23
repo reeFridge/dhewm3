@@ -45,7 +45,8 @@ struct shaderProgDef_t {
 
 static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
 	{ "interaction.vs", "interaction.fs", SPROG_INTERACTION, 0 },
-	{ "default.vs", "default.fs", SPROG_DEFAULT, 0 }
+	{ "default.vs", "default.fs", SPROG_DEFAULT, 0 },
+	{ "shadow.vs", "shadow.fs", SPROG_SHADOW, 0 }
 };
 
 GLuint R_LoadPartShader(idStr path, GLuint type) {
@@ -287,7 +288,7 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 	}
 
 	// perform setup here that will be constant for all interactions
-	//GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHMASK | backEnd.depthFunc );
+	GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHMASK | backEnd.depthFunc );
 	GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
 
 	// bind the vertex program
@@ -437,26 +438,26 @@ void RB_ARB2_DrawInteractions( void ) {
 					backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 					backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
 			}
-			//qglClear( GL_STENCIL_BUFFER_BIT );
+			qglClear( GL_STENCIL_BUFFER_BIT );
 		} else {
 			// no shadows, so no need to read or write the stencil buffer
 			// we might in theory want to use GL_ALWAYS instead of disabling
 			// completely, to satisfy the invarience rules
-			//qglStencilFunc( GL_ALWAYS, 128, 255 );
+			qglStencilFunc( GL_ALWAYS, 128, 255 );
 		}
 
 		if ( r_useShadowVertexProgram.GetBool() ) {
 			/*
 			qglEnable( GL_VERTEX_PROGRAM_ARB );
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
-			RB_StencilShadowPass( vLight->globalShadows );
 			*/
+			RB_StencilShadowPass( vLight->globalShadows );
 			RB_ARB2_CreateDrawInteractions( vLight->localInteractions );
 			/*
 			qglEnable( GL_VERTEX_PROGRAM_ARB );
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
-			RB_StencilShadowPass( vLight->localShadows );
 			*/
+			RB_StencilShadowPass( vLight->localShadows );
 			RB_ARB2_CreateDrawInteractions( vLight->globalInteractions );
 			/*
 			qglDisable( GL_VERTEX_PROGRAM_ARB );	// if there weren't any globalInteractions, it would have stayed on
@@ -475,7 +476,7 @@ void RB_ARB2_DrawInteractions( void ) {
 			continue;
 		}
 
-		//qglStencilFunc( GL_ALWAYS, 128, 255 );
+		qglStencilFunc( GL_ALWAYS, 128, 255 );
 
 		backEnd.depthFunc = GLS_DEPTHFUNC_LESS;
 		RB_ARB2_CreateDrawInteractions( vLight->translucentInteractions );
@@ -484,7 +485,7 @@ void RB_ARB2_DrawInteractions( void ) {
 	}
 
 	// disable stencil shadow test
-	//qglStencilFunc( GL_ALWAYS, 128, 255 );
+	qglStencilFunc( GL_ALWAYS, 128, 255 );
 
 	GL_SelectTexture( 0 );
 	//qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
