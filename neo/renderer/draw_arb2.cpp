@@ -255,7 +255,6 @@ void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 	GL_SelectTextureNoClient( 2 );
 	qglUniform1i(qglGetUniformLocation(shader, "t_falloff"), 2);
 	din->lightFalloffImage->Bind();
-	//common->Printf("textureNum: %d\n", din->lightFalloffImage->texnum);
 
 	// texture 3 will be the light projection texture
 	GL_SelectTextureNoClient( 3 );
@@ -335,7 +334,6 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 		globalImages->specular2DTableImage->Bind();	// variable specularity in alpha channel
 	} else {
 		globalImages->specularTableImage->Bind();
-		globalImages->specularTableImage->Print();
 	}
 
 	// default matrices

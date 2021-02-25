@@ -61,7 +61,7 @@ Used for determining memory utilization
 int idImage::BitsForInternalFormat( int internalFormat ) const {
 	switch ( internalFormat ) {
 	//case GL_INTENSITY8:
-	case GL_RED:
+	case GL_R8:
 	case 1:
 		return 8;
 	case 2:
@@ -331,7 +331,7 @@ GLenum idImage::SelectInternalFormat( const byte **dataPtrs, int numDataPtrs, in
 		}
 		// deprecated in core
 		//return GL_INTENSITY8;	// single byte for all channels
-		return GL_RED;
+		return GL_R8;
 	}
 
 #if 0
@@ -1071,7 +1071,7 @@ void idImage::WritePrecompressedImage() {
 		case 1:
 		//case GL_INTENSITY8:
 		//case GL_LUMINANCE8:
-		case GL_RED:
+		case GL_R8:
 		case 3:
 		case GL_RGB8:
 			altInternalFormat = GL_BGR_EXT;
@@ -2101,7 +2101,7 @@ void idImage::Print() const {
 
 	switch ( internalFormat ) {
 	//case GL_INTENSITY8:
-	case GL_RED:
+	case GL_R8:
 	case 1:
 		//common->Printf( "I     " );
 		common->Printf( "R     " );
