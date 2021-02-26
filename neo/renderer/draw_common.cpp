@@ -1770,7 +1770,29 @@ void RB_STD_LightScale( void ) {
 		backEnd.currentScissor = backEnd.viewDef->scissor;
 	}
 
+
 	// full screen blends
+	GLuint shader = R_FindShaderProgram(SPROG_LIGHT_SCALE);
+	qglUseProgram(shader);
+
+	const float identity[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "modelView"), 1, GL_FALSE, identity);
+	const float ortho[6] = {0, 1, 0, 1, -1, 1};
+	const float tx = -((ortho[1] + ortho[0])/(ortho[1] - ortho[0]));
+	const float ty = -((ortho[3] + ortho[2])/(ortho[3] - ortho[2]));
+	const float tz = -((ortho[5] + ortho[4])/(ortho[5] - ortho[4]));
+	const float ortho_matrix[16] = {
+		2/(ortho[1] - ortho[0]), 0, 0, tx,
+		0, 2/(ortho[3] - ortho[2]), 0, ty,
+		0, 0, 2/(ortho[5] - ortho[4]), tz,
+		0, 0, 0, 1
+	};
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, ortho_matrix);
 	/*
 	qglLoadIdentity();
 	qglMatrixMode( GL_PROJECTION );
@@ -1778,6 +1800,31 @@ void RB_STD_LightScale( void ) {
 	qglLoadIdentity();
 	qglOrtho( 0, 1, 0, 1, -1, 1 );
 	*/
+
+	const float vertices[8] = {
+		0, 0,
+		0, 1,
+		1, 1,
+		1, 0
+	};
+
+	const float indices[6] = {
+		1, 0, 3,
+		1, 2, 3
+	};
+
+	GLuint VBO, EBO;
+	qglGenBuffers(1, &VBO);
+	qglGenBuffers(1, &EBO);
+
+	qglBindBuffer(GL_ARRAY_BUFFER, VBO);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// 3. copy our index array in a element buffer for OpenGL to use
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// 4. then set the vertex attributes pointers
+	qglVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	qglEnableVertexAttribArray(0);
 
 	GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_SRC_COLOR );
 	GL_Cull( CT_TWO_SIDED );	// so mirror views also get it
@@ -1787,14 +1834,18 @@ void RB_STD_LightScale( void ) {
 
 	v = 1;
 	while ( idMath::Fabs( v - backEnd.overBright ) > 0.01 ) {	// a little extra slop
+		common->Printf("LIGHT_SCALE\n");
 		f = backEnd.overBright / v;
 		f /= 2;
 		if ( f > 1 ) {
 			f = 1;
 		}
+		float color[4] = {f, f, f, 1.0};
+		qglUniform4fv(qglGetUniformLocation(shader, "color"), 1, color);
 		//qglColor3f( f, f, f );
 		v = v * f * 2;
 
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		/*
 		qglBegin( GL_QUADS );
 		qglVertex2f( 0,0 );
@@ -1805,6 +1856,10 @@ void RB_STD_LightScale( void ) {
 		*/
 	}
 
+	qglUseProgram(0);
+	qglDisableVertexAttribArray(0);
+	qglDeleteBuffers(1, &VBO);
+	qglDeleteBuffers(1, &EBO);
 
 	//qglPopMatrix();
 	qglEnable( GL_DEPTH_TEST );

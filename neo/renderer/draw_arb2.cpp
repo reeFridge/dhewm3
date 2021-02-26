@@ -46,7 +46,8 @@ struct shaderProgDef_t {
 static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
 	{ "interaction.vs", "interaction.fs", SPROG_INTERACTION, 0 },
 	{ "default.vs", "default.fs", SPROG_DEFAULT, 0 },
-	{ "shadow.vs", "shadow.fs", SPROG_SHADOW, 0 }
+	{ "shadow.vs", "shadow.fs", SPROG_SHADOW, 0 },
+	{ "light_scale.vs", "light_scale.fs", SPROG_LIGHT_SCALE, 0 }
 };
 
 GLuint R_LoadPartShader(idStr path, GLuint type) {
