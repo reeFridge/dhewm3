@@ -29,6 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "framework/Session.h"
 #include "renderer/tr_local.h"
+#include <string>
 
 #include "renderer/MegaTexture.h"
 
@@ -221,23 +222,28 @@ void	idMegaTexture::SetMappingForSurface( const srfTriangles_t *tri ) {
 BindForViewOrigin
 ====================
 */
-void idMegaTexture::BindForViewOrigin( const idVec3 viewOrigin ) {
+void idMegaTexture::BindForViewOrigin( const idVec3 viewOrigin, GLuint shader ) {
 
 	SetViewOrigin( viewOrigin );
 
 	// borderClamp image goes in texture 0
 	GL_SelectTexture( 0 );
 	globalImages->borderClampImage->Bind();
+	qglUniform1i(qglGetUniformLocation(shader, "border_clamp_texture"), 0);
 
 	// level images in higher textures, blurriest first
 	for ( int i = 0 ; i < 7 ; i++ ) {
 		GL_SelectTexture( 1+i );
+		std::string inc_idx_str = std::to_string(i + 1);
+		qglUniform1i(qglGetUniformLocation(shader, ("mega_texture_" + inc_idx_str).c_str()), 1 + i);
+		std::string idx_str = std::to_string(i);
 
 		if ( i >= numLevels ) {
 			globalImages->whiteImage->Bind();
 
 			static float	parms[4] = { -2, -2, 0, 1 };	// no contribution
-			qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, i, parms );
+			//qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, i, parms );
+			qglUniformMatrix4fv(qglGetUniformLocation(shader, ("texture_level_parm_" + idx_str).c_str()), 1, GL_FALSE, parms);
 		} else {
 			idTextureLevel	*level = &levels[ numLevels-1-i ];
 
@@ -250,7 +256,8 @@ void idMegaTexture::BindForViewOrigin( const idVec3 viewOrigin ) {
 			} else {
 				level->image->Bind();
 			}
-			qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, i, level->parms );
+			//qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, i, level->parms );
+			qglUniformMatrix4fv(qglGetUniformLocation(shader, ("texture_level_parm_" + idx_str).c_str()), 1, GL_FALSE, level->parms);
 		}
 	}
 
@@ -259,13 +266,15 @@ void idMegaTexture::BindForViewOrigin( const idVec3 viewOrigin ) {
 	parms[1] = 0;
 	parms[2] = 0;
 	parms[3] = 1;
-	qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, 7, parms );
+	//qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, 7, parms );
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "mega_texture_parm_7"), 1, GL_FALSE, parms);
 
 	parms[0] = 1;
 	parms[1] = 1;
 	parms[2] = r_terrainScale.GetFloat();
 	parms[3] = 1;
-	qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, 8, parms );
+	//qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, 8, parms );
+	qglUniformMatrix4fv(qglGetUniformLocation(shader, "mega_texture_parm_8"), 1, GL_FALSE, parms);
 }
 
 /*
