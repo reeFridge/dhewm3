@@ -984,15 +984,20 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 			continue;
 		}
 
+		GLuint shader_prog = R_FindShaderProgram(SPROG_SHADER_PASS);
+
 		// select the vertex color source
-		/*
 		if ( pStage->vertexColor == SVC_IGNORE ) {
-			qglColor4fv( color );
+			//qglColor4fv( color );
+			qglUniform4fv(qglGetUniformLocation(shader_prog, "color"), 1, color);
 		} else {
-			qglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), (void *)&ac->color );
-			qglEnableClientState( GL_COLOR_ARRAY );
+			//qglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), (void *)&ac->color );
+			//qglEnableClientState( GL_COLOR_ARRAY );
+			qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color);
+			qglEnableVertexAttribArray(1);
 
 			if ( pStage->vertexColor == SVC_INVERSE_MODULATE ) {
+				/*
 				GL_TexEnv( GL_COMBINE_ARB );
 				qglTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE );
 				qglTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE );
@@ -1000,11 +1005,13 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 				qglTexEnvi( GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR );
 				qglTexEnvi( GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB, GL_ONE_MINUS_SRC_COLOR );
 				qglTexEnvi( GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 1 );
+				*/
 			}
 
 			// for vertex color and modulated color, we need to enable a second
 			// texture stage
 			if ( color[0] != 1 || color[1] != 1 || color[2] != 1 || color[3] != 1 ) {
+				/*
 				GL_SelectTexture( 1 );
 
 				globalImages->whiteImage->Bind();
@@ -1027,11 +1034,10 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 				qglTexEnvi( GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1 );
 
 				GL_SelectTexture( 0 );
+				*/
 			}
 		}
-		*/
 
-		GLuint shader_prog = R_FindShaderProgram(SPROG_SHADER_PASS);
 		// bind the texture
 		GL_SelectTexture(0);
 		RB_BindVariableStageImage( &pStage->texture, regs );
@@ -1060,6 +1066,7 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 		*/
 	}
 
+	qglDisableVertexAttribArray(1);
 	qglDisableVertexAttribArray(8);
 	qglDisableVertexAttribArray(0);
 

@@ -102,8 +102,11 @@ extern	PFNGLACTIVESTENCILFACEEXTPROC	qglActiveStencilFaceEXT;
 extern PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
 
 // ARB_texture_compression
-extern	PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	qglCompressedTexImage2DARB;
-extern	PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	qglGetCompressedTexImageARB;
+//extern	PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	qglCompressedTexImage2DARB;
+//extern	PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	qglGetCompressedTexImageARB;
+
+extern PFNGLCOMPRESSEDTEXIMAGE2DPROC qglCompressedTexImage2D;
+extern PFNGLGETCOMPRESSEDTEXIMAGEPROC qglGetCompressedTexImage;
 
 // ARB_vertex_program / ARB_fragment_program
 extern PFNGLVERTEXATTRIBPOINTERARBPROC		qglVertexAttribPointerARB;

@@ -247,8 +247,11 @@ void (APIENTRY * qglColorTableEXT)( int, int, int, int, int, const void * );
 PFNGLACTIVESTENCILFACEEXTPROC			qglActiveStencilFaceEXT;
 
 // ARB_texture_compression
-PFNGLCOMPRESSEDTEXIMAGE2DARBPROC		qglCompressedTexImage2DARB;
-PFNGLGETCOMPRESSEDTEXIMAGEARBPROC		qglGetCompressedTexImageARB;
+//PFNGLCOMPRESSEDTEXIMAGE2DARBPROC		qglCompressedTexImage2DARB;
+//PFNGLGETCOMPRESSEDTEXIMAGEARBPROC		qglGetCompressedTexImageARB;
+
+PFNGLCOMPRESSEDTEXIMAGE2DPROC qglCompressedTexImage2D;
+PFNGLGETCOMPRESSEDTEXIMAGEPROC qglGetCompressedTexImage;
 
 // ARB_vertex_buffer_object
 PFNGLBINDBUFFERARBPROC					qglBindBufferARB;
@@ -353,10 +356,13 @@ static void R_CheckPortableExtensions( void ) {
 
 	// GL_ARB_texture_compression + GL_S3_s3tc
 	// DRI drivers may have GL_ARB_texture_compression but no GL_EXT_texture_compression_s3tc
-	if ( R_CheckExtension( "GL_ARB_texture_compression" ) && R_CheckExtension( "GL_EXT_texture_compression_s3tc" ) ) {
+	//if ( R_CheckExtension( "GL_ARB_texture_compression" ) && R_CheckExtension( "GL_EXT_texture_compression_s3tc" ) ) {
+	if (R_CheckExtension( "GL_EXT_texture_compression_s3tc" )) {
 		glConfig.textureCompressionAvailable = true;
-		qglCompressedTexImage2DARB = (PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)GLimp_ExtensionPointer( "glCompressedTexImage2DARB" );
-		qglGetCompressedTexImageARB = (PFNGLGETCOMPRESSEDTEXIMAGEARBPROC)GLimp_ExtensionPointer( "glGetCompressedTexImageARB" );
+		//qglCompressedTexImage2DARB = (PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)GLimp_ExtensionPointer( "glCompressedTexImage2DARB" );
+		//qglGetCompressedTexImageARB = (PFNGLGETCOMPRESSEDTEXIMAGEARBPROC)GLimp_ExtensionPointer( "glGetCompressedTexImageARB" );
+		qglCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)GLimp_ExtensionPointer( "glCompressedTexImage2D" );
+		qglGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)GLimp_ExtensionPointer( "glGetCompressedTexImage" );
 	} else {
 		glConfig.textureCompressionAvailable = false;
 	}

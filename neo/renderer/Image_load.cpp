@@ -65,7 +65,8 @@ int idImage::BitsForInternalFormat( int internalFormat ) const {
 	case 1:
 		return 8;
 	case 2:
-	case GL_LUMINANCE8_ALPHA8:
+	//case GL_LUMINANCE8_ALPHA8:
+	case GL_RG8:
 		return 16;
 	case 3:
 		return 32;		// on some future hardware, this may actually be 24, but be conservative
@@ -351,7 +352,8 @@ GLenum idImage::SelectInternalFormat( const byte **dataPtrs, int numDataPtrs, in
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	// one byte
 	}
 	if ( !rgbDiffer ) {
-		return GL_LUMINANCE8_ALPHA8;	// two bytes, max quality
+		//return GL_LUMINANCE8_ALPHA8;	// two bytes, max quality
+		return GL_RG8;
 	}
 	return GL_RGBA4;	// two bytes
 }
@@ -1077,7 +1079,8 @@ void idImage::WritePrecompressedImage() {
 			altInternalFormat = GL_BGR_EXT;
 			bitSize = 24;
 		break;
-		case GL_LUMINANCE8_ALPHA8:
+		//case GL_LUMINANCE8_ALPHA8:
+		case GL_RG8:
 		case 4:
 		case GL_RGBA8:
 			altInternalFormat = GL_BGRA_EXT;
@@ -1232,7 +1235,8 @@ void idImage::WritePrecompressedImage() {
 		}
 
 		if ( FormatIsDXT( altInternalFormat ) ) {
-			qglGetCompressedTexImageARB( GL_TEXTURE_2D, level, data );
+			//qglGetCompressedTexImageARB( GL_TEXTURE_2D, level, data );
+			qglGetCompressedTexImage( GL_TEXTURE_2D, level, data );
 		} else {
 			qglGetTexImage( GL_TEXTURE_2D, level, altInternalFormat, GL_UNSIGNED_BYTE, data );
 		}
@@ -1530,7 +1534,8 @@ void idImage::UploadPrecompressedImage( byte *data, int len ) {
 			skipMip++;
 		} else {
 			if ( FormatIsDXT( internalFormat ) ) {
-				qglCompressedTexImage2DARB( GL_TEXTURE_2D, i - skipMip, internalFormat, uw, uh, 0, size, imagedata );
+				//qglCompressedTexImage2DARB( GL_TEXTURE_2D, i - skipMip, internalFormat, uw, uh, 0, size, imagedata );
+				qglCompressedTexImage2D( GL_TEXTURE_2D, i - skipMip, internalFormat, uw, uh, 0, size, imagedata );
 			} else {
 				qglTexImage2D( GL_TEXTURE_2D, i - skipMip, internalFormat, uw, uh, 0, externalFormat, GL_UNSIGNED_BYTE, imagedata );
 			}
@@ -2107,7 +2112,8 @@ void idImage::Print() const {
 		common->Printf( "R     " );
 		break;
 	case 2:
-	case GL_LUMINANCE8_ALPHA8:
+	//case GL_LUMINANCE8_ALPHA8:
+	case GL_RG8:
 		common->Printf( "LA    " );
 		break;
 	case 3:
