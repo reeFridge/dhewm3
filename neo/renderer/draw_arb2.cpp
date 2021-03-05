@@ -44,11 +44,14 @@ struct shaderProgDef_t {
 };
 
 static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
-	{ "interaction.vs", "interaction.fs", SPROG_INTERACTION, 0 },
-	{ "default.vs", "default.fs", SPROG_DEFAULT, 0 },
-	{ "shadow.vs", "shadow.fs", SPROG_SHADOW, 0 },
-	{ "light_scale.vs", "light_scale.fs", SPROG_LIGHT_SCALE, 0 },
-	{ "shader_pass.vs", "shader_pass.fs", SPROG_SHADER_PASS, 0 }
+	{ "interaction.vert", "interaction.frag", SPROG_INTERACTION, 0 },
+	{ "default.vert", "default.frag", SPROG_DEFAULT, 0 },
+	{ "shadow.vert", "shadow.frag", SPROG_SHADOW, 0 },
+	{ "light_scale.vert", "light_scale.frag", SPROG_LIGHT_SCALE, 0 },
+	{ "shader_pass.vert", "shader_pass.frag", SPROG_SHADER_PASS, 0 },
+	{ "environment.vert", "environment.frag", SPROG_ENV, 0 },
+	{ "bumpy_environment.vert", "bumpy_environment.frag", SPROG_BUMPY_ENV, 0 },
+	{ "glasswarp.vert", "glasswarp.frag", SPROG_GLASSWARP, 0 },
 };
 
 GLuint R_LoadPartShader(idStr path, GLuint type) {
