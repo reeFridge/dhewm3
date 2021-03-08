@@ -13,12 +13,15 @@ uniform mat4 model;
 uniform mat4 modelView;
 uniform mat4 proj;
 
-out vec2 tc_normal_map;
+out vec2 TexCoords;
 out vec3 tc_to_eye;
 out vec3 tc_normal;
 out vec3 tc_tangent0;
 out vec3 tc_tangent1;
 out vec4 VertexColor;
+
+uniform bool HAS_TEXTURE_MATRIX;
+uniform mat4 texture_matrix;
 
 void main() {
 	gl_Position = proj * modelView * vec4(aPos, 1.0);
@@ -27,6 +30,10 @@ void main() {
 	tc_normal = (model * vec4(aNormal, 1.0)).xyz;
 	tc_tangent0 = (model * vec4(aTangent0, 1.0)).xyz;
 	tc_tangent1 = (model * vec4(aTangent1, 1.0)).xyz;
-	tc_normal_map = aTexCoords;
+	if (HAS_TEXTURE_MATRIX) {
+		TexCoords = vec2(texture_matrix * vec4(aTexCoords, 0.0, 1.0));
+	} else {
+		TexCoords = aTexCoords;
+	}
 	VertexColor = aColor;
 }

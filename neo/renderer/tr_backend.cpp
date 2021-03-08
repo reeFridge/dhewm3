@@ -44,7 +44,7 @@ void RB_SetDefaultGLState( void ) {
 	int		i;
 
 	qglClearDepth( 1.0f );
-	qglColor4f (1,1,1,1);
+	//qglColor4f (1,1,1,1);
 
 	// the vertex array is always enabled
 	//qglEnableClientState( GL_VERTEX_ARRAY );
@@ -72,30 +72,32 @@ void RB_SetDefaultGLState( void ) {
 	qglDepthFunc( GL_ALWAYS );
 
 	qglCullFace( GL_FRONT_AND_BACK );
-	qglShadeModel( GL_SMOOTH );
+	//qglShadeModel( GL_SMOOTH );
 
 	if ( r_useScissor.GetBool() ) {
 		qglScissor( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
 	}
 
+	/*
 	for ( i = glConfig.maxTextureUnits - 1 ; i >= 0 ; i-- ) {
 		GL_SelectTexture( i );
 
 		// object linear texgen is our default
-		qglTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
-		qglTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
-		qglTexGenf( GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
-		qglTexGenf( GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
+		//qglTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
+		//qglTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
+		//qglTexGenf( GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
+		//qglTexGenf( GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
 
 		GL_TexEnv( GL_MODULATE );
-		qglDisable( GL_TEXTURE_2D );
+		//qglDisable( GL_TEXTURE_2D );
 		if ( glConfig.texture3DAvailable ) {
-			qglDisable( GL_TEXTURE_3D );
+			//qglDisable( GL_TEXTURE_3D );
 		}
 		if ( glConfig.cubeMapAvailable ) {
-			qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
+			//qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
 		}
 	}
+	*/
 }
 
 
