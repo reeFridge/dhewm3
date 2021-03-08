@@ -35,5 +35,4 @@ void main() {
 	}
 
 	FragColor = out_color;
-	//discard;
 }

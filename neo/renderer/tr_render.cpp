@@ -230,15 +230,16 @@ void RB_RenderDrawSurfListWithFunction( drawSurf_t **drawSurfs, int numDrawSurfs
 		if ( drawSurf->space != backEnd.currentSpace ) {
 			//qglLoadMatrixf( drawSurf->space->modelViewMatrix );
 		}
+		*/
 
+		float depthHackProjMatrix[16];
 		if ( drawSurf->space->weaponDepthHack ) {
-			//RB_EnterWeaponDepthHack();
+			RB_EnterWeaponDepthHack(depthHackProjMatrix);
 		}
 
 		if ( drawSurf->space->modelDepthHack != 0.0f ) {
-			//RB_EnterModelDepthHack( drawSurf->space->modelDepthHack );
+			RB_EnterModelDepthHack( drawSurf->space->modelDepthHack, depthHackProjMatrix);
 		}
-		*/
 
 		// change the scissor if needed
 		if ( r_useScissor.GetBool() && !backEnd.currentScissor.Equals( drawSurf->scissorRect ) ) {
@@ -277,12 +278,13 @@ void RB_RenderDrawSurfChainWithFunction( const drawSurf_t *drawSurfs,
 			//qglLoadMatrixf( drawSurf->space->modelViewMatrix );
 		}
 
+		float depthHackProjMatrix[16];
 		if ( drawSurf->space->weaponDepthHack ) {
-			//RB_EnterWeaponDepthHack();
+			RB_EnterWeaponDepthHack(depthHackProjMatrix);
 		}
 
-		if ( drawSurf->space->modelDepthHack ) {
-			//RB_EnterModelDepthHack( drawSurf->space->modelDepthHack );
+		if ( drawSurf->space->modelDepthHack != 0.0f ) {
+			RB_EnterModelDepthHack( drawSurf->space->modelDepthHack, depthHackProjMatrix);
 		}
 
 		// change the scissor if needed
@@ -704,16 +706,14 @@ void RB_CreateSingleDrawInteractions( const drawSurf_t *surf, void (*DrawInterac
 			backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 			backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
 	}
+
+	float depthHackProjMatrix[16];
 	if ( surf->space->weaponDepthHack ) {
-		float matrix[16];
-		RB_EnterWeaponDepthHack(matrix);
-		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+		RB_EnterWeaponDepthHack(depthHackProjMatrix);
 	}
 
 	if ( surf->space->modelDepthHack != 0.0f ) {
-		float matrix[16];
-		RB_EnterModelDepthHack( surf->space->modelDepthHack, matrix);
-		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
+		RB_EnterModelDepthHack( surf->space->modelDepthHack, depthHackProjMatrix);
 	}
 
 	inter.surf = surf;

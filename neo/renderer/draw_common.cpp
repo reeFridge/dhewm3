@@ -468,19 +468,6 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, surf->space->modelViewMatrix);
 	}
 
-	// Is it still needed? @fridge
-	if ( surf->space->weaponDepthHack ) {
-		float matrix[16];
-		RB_EnterWeaponDepthHack(matrix);
-		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
-	}
-
-	if ( surf->space->modelDepthHack != 0.0f ) {
-		float matrix[16];
-		RB_EnterModelDepthHack( surf->space->modelDepthHack, matrix);
-		//qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, matrix);
-	}
-
 	bool drawSolid = false;
 
 	if ( shader->Coverage() == MC_OPAQUE ) {
@@ -813,12 +800,13 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 		qglPolygonOffset( r_offsetFactor.GetFloat(), r_offsetUnits.GetFloat() * shader->GetPolygonOffset() );
 	}
 
+	float depthHackProjMatrix[16];
 	if ( surf->space->weaponDepthHack ) {
-		//RB_EnterWeaponDepthHack();
+		RB_EnterWeaponDepthHack(depthHackProjMatrix);
 	}
 
 	if ( surf->space->modelDepthHack != 0.0f ) {
-		//RB_EnterModelDepthHack( surf->space->modelDepthHack );
+		RB_EnterModelDepthHack( surf->space->modelDepthHack, depthHackProjMatrix);
 	}
 
 	idDrawVert *ac = (idDrawVert *)vertexCache.Position( tri->ambientCache );
