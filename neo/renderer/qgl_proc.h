@@ -57,6 +57,7 @@ QGLPROC(glBufferSubData, void, (GLenum target, GLintptr offset, GLsizeiptr size,
 QGLPROC(glUniformMatrix4fv, void, (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value))
 QGLPROC(glUniform4fv, void, (GLint location, GLsizei count, const GLfloat *value))
 QGLPROC(glUniform3fv, void, (GLint location, GLsizei count, const GLfloat *value))
+QGLPROC(glUniform2fv, void, (GLint location, GLsizei count, const GLfloat *value))
 QGLPROC(glUniform3f, void, (GLint location, GLfloat v0, GLfloat v1, GLfloat v2))
 QGLPROC(glGetUniformLocation, GLuint, (GLuint program, const GLchar *name))
 QGLPROC(glUniform1i, void, (GLint location, GLint v0))

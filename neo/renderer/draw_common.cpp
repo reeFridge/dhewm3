@@ -1613,27 +1613,34 @@ RB_T_BasicFog
 static void RB_T_BasicFog( const drawSurf_t *surf ) {
 	if ( backEnd.currentSpace != surf->space ) {
 		idPlane	local;
+		GLuint shader_prog = R_FindShaderProgram(SPROG_FOG_PASS);
 
 		GL_SelectTexture( 0 );
 
 		R_GlobalPlaneToLocal( surf->space->modelMatrix, fogPlanes[0], local );
 		local[3] += 0.5;
-		qglTexGenfv( GL_S, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		//qglTexGenfv( GL_S, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		qglUniform4fv(qglGetUniformLocation(shader_prog, "object_plane_s_0"), 1, local.ToFloatPtr());
 
 //		R_GlobalPlaneToLocal( surf->space->modelMatrix, fogPlanes[1], local );
 //		local[3] += 0.5;
-local[0] = local[1] = local[2] = 0; local[3] = 0.5;
-		qglTexGenfv( GL_T, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		local[0] = local[1] = local[2] = 0; local[3] = 0.5;
+		//qglTexGenfv( GL_T, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		qglUniform4fv(qglGetUniformLocation(shader_prog, "object_plane_t_0"), 1, local.ToFloatPtr());
 
 		GL_SelectTexture( 1 );
 
 		// GL_S is constant per viewer
 		R_GlobalPlaneToLocal( surf->space->modelMatrix, fogPlanes[2], local );
 		local[3] += FOG_ENTER;
-		qglTexGenfv( GL_T, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		//qglTexGenfv( GL_T, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		qglUniform4fv(qglGetUniformLocation(shader_prog, "object_plane_t_1"), 1, local.ToFloatPtr());
 
 		R_GlobalPlaneToLocal( surf->space->modelMatrix, fogPlanes[3], local );
-		qglTexGenfv( GL_S, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		//qglTexGenfv( GL_S, GL_OBJECT_PLANE, local.ToFloatPtr() );
+		qglUniform4fv(qglGetUniformLocation(shader_prog, "object_plane_s_1"), 1, local.ToFloatPtr());
+
+		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, surf->space->modelViewMatrix);
 	}
 
 	RB_T_RenderTriangleSurface( surf );
@@ -1647,8 +1654,6 @@ RB_FogPass
 ==================
 */
 static void RB_FogPass( const drawSurf_t *drawSurfs,  const drawSurf_t *drawSurfs2 ) {
-	common->Printf("!!! TODO: RB_FogPass \n");
-	return;
 	const srfTriangles_t*frustumTris;
 	drawSurf_t			ds;
 	const idMaterial	*lightShader;
@@ -1678,7 +1683,11 @@ static void RB_FogPass( const drawSurf_t *drawSurfs,  const drawSurf_t *drawSurf
 	backEnd.lightColor[2] = regs[ stage->color.registers[2] ];
 	backEnd.lightColor[3] = regs[ stage->color.registers[3] ];
 
-	qglColor3fv( backEnd.lightColor );
+	GLuint shader_prog = R_FindShaderProgram(SPROG_FOG_PASS);
+	qglUseProgram(shader_prog);
+	//qglColor3fv( backEnd.lightColor );
+	// !!! in shader set rgb from color and a = 1.0
+	qglUniform4fv(qglGetUniformLocation(shader_prog, "color"), 1, backEnd.lightColor);
 
 	// calculate the falloff planes
 	float	a;
@@ -1693,14 +1702,21 @@ static void RB_FogPass( const drawSurf_t *drawSurfs,  const drawSurf_t *drawSurf
 
 	GL_State( GLS_DEPTHMASK | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL );
 
+	float tex_coord[2];
 	// texture 0 is the falloff image
 	GL_SelectTexture( 0 );
 	globalImages->fogImage->Bind();
+	qglUniform1i(qglGetUniformLocation(shader_prog, "texture_0"), 0);
 	//GL_Bind( tr.whiteImage );
+	/*
 	qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 	qglEnable( GL_TEXTURE_GEN_S );
 	qglEnable( GL_TEXTURE_GEN_T );
-	qglTexCoord2f( 0.5f, 0.5f );		// make sure Q is set
+	*/
+	//qglTexCoord2f( 0.5f, 0.5f );		// make sure Q is set
+	tex_coord[0] = 0.5f;
+	tex_coord[1] = 0.5f;
+	qglUniform2fv(qglGetUniformLocation(shader_prog, "tex_coord_0"), 1, tex_coord);
 
 	fogPlanes[0][0] = a * backEnd.viewDef->worldSpace.modelViewMatrix[2];
 	fogPlanes[0][1] = a * backEnd.viewDef->worldSpace.modelViewMatrix[6];
@@ -1716,9 +1732,12 @@ static void RB_FogPass( const drawSurf_t *drawSurfs,  const drawSurf_t *drawSurf
 	// texture 1 is the entering plane fade correction
 	GL_SelectTexture( 1 );
 	globalImages->fogEnterImage->Bind();
+	qglUniform1i(qglGetUniformLocation(shader_prog, "texture_1"), 1);
+	/*
 	qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 	qglEnable( GL_TEXTURE_GEN_S );
 	qglEnable( GL_TEXTURE_GEN_T );
+	*/
 
 	// T will get a texgen for the fade plane, which is always the "top" plane on unrotated lights
 	fogPlanes[2][0] = 0.001f * backEnd.vLight->fogPlane[0];
@@ -1734,8 +1753,14 @@ static void RB_FogPass( const drawSurf_t *drawSurfs,  const drawSurf_t *drawSurf
 	fogPlanes[3][2] = 0;
 	fogPlanes[3][3] = FOG_ENTER + s;
 
-	qglTexCoord2f( FOG_ENTER + s, FOG_ENTER );
+	//qglTexCoord2f( FOG_ENTER + s, FOG_ENTER );
+	tex_coord[0] = FOG_ENTER + s;
+	tex_coord[1] = FOG_ENTER;
+	qglUniform2fv(qglGetUniformLocation(shader_prog, "tex_coord_1"), 1, tex_coord);
 
+	// default matrices
+	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
 
 	// draw it
 	RB_RenderDrawSurfChainWithFunction( drawSurfs, RB_T_BasicFog );
@@ -1748,14 +1773,18 @@ static void RB_FogPass( const drawSurf_t *drawSurfs,  const drawSurf_t *drawSurf
 	RB_RenderDrawSurfChainWithFunction( &ds, RB_T_BasicFog );
 	GL_Cull( CT_FRONT_SIDED );
 
+	qglUseProgram(0);
+
 	GL_SelectTexture( 1 );
-	qglDisable( GL_TEXTURE_GEN_S );
-	qglDisable( GL_TEXTURE_GEN_T );
+	//qglDisable( GL_TEXTURE_GEN_S );
+	//qglDisable( GL_TEXTURE_GEN_T );
 	globalImages->BindNull();
 
+	/*
 	GL_SelectTexture( 0 );
 	qglDisable( GL_TEXTURE_GEN_S );
 	qglDisable( GL_TEXTURE_GEN_T );
+	*/
 }
 
 

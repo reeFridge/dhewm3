@@ -55,7 +55,8 @@ static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
 	{ "heat_haze.vert", "heat_haze.frag", SPROG_HEAT_HAZE, 0 },
 	{ "heat_haze_with_mask.vert", "heat_haze_with_mask.frag", SPROG_HEAT_HAZE_WITH_MASK, 0 },
 	{ "heat_haze_with_mask_and_vertex.vert", "heat_haze_with_mask_and_vertex.frag", SPROG_HEAT_HAZE_WITH_MASK_AND_VERTEX, 0 },
-	{ "color_process.vert", "color_process.frag", SPROG_COLOR_PROCESS, 0 }
+	{ "color_process.vert", "color_process.frag", SPROG_COLOR_PROCESS, 0 }, // todo: port
+	{ "fog_pass.vert", "fog_pass.frag", SPROG_FOG_PASS, 0 }
 };
 
 typedef struct arbToProgram_t arbToProgram_t;
