@@ -217,7 +217,6 @@ void RB_PrepareStageTexturing( const shaderStage_t *pStage,  const drawSurf_t *s
 	}
 
 	if ( tg == TG_REFLECT_CUBE ) {
-		common->Printf("!!! TODO: TG_REFLECT_CUBE \n");
 		// see if there is also a bump map specified
 		const shaderStage_t *bumpStage = surf->material->GetBumpStage();
 		if ( bumpStage ) {
@@ -684,7 +683,7 @@ void RB_SetProgramEnvironment( GLuint shader ) {
 	parm[3] = 1;
 	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, 0, parm );
 #endif
-	qglUniform4fv(qglGetUniformLocation(shader, "screen"), 1, parm);
+	qglUniform4fv(qglGetUniformLocation(shader, "screen_factor"), 1, parm);
 
 	//qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 0, parm );
 
@@ -874,9 +873,9 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 			qglEnableClientState( GL_NORMAL_ARRAY );
 			*/
 			qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color);
-			qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
-			qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
-			qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+			qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+			qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+			qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
 
 			qglEnableVertexAttribArray(1);
 			qglEnableVertexAttribArray(9);
@@ -889,9 +888,8 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, newStage->vertexProgram );
 			qglEnable( GL_VERTEX_PROGRAM_ARB );
 			*/
-			common->Printf("mock shader pass vs#%d, fs#%d\n", newStage->vertexProgram, newStage->fragmentProgram);
 
-			GLuint shader_prog = R_FindShaderProgram(SPROG_SHADER_PASS);
+			GLuint shader_prog = R_FindShaderProgram((program_t)newStage->programId);
 			qglUseProgram(shader_prog);
 
 			RB_SetProgramEnvironment(shader_prog);
@@ -916,7 +914,7 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 				parm[3] = regs[ newStage->vertexParms[i][3] ];
 				//qglProgramLocalParameter4fvARB( GL_VERTEX_PROGRAM_ARB, i, parm );
 				std::string idx_str = std::to_string(i);
-				qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, ("vertex_param_" + idx_str).c_str()), 1, GL_FALSE, parm);
+				qglUniform4fv(qglGetUniformLocation(shader_prog, ("vertex_parm_" + idx_str).c_str()), 1, parm);
 			}
 
 			for ( int i = 0 ; i < newStage->numFragmentProgramImages ; i++ ) {

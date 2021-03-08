@@ -52,6 +52,25 @@ static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
 	{ "environment.vert", "environment.frag", SPROG_ENV, 0 },
 	{ "bumpy_environment.vert", "bumpy_environment.frag", SPROG_BUMPY_ENV, 0 },
 	{ "glasswarp.vert", "glasswarp.frag", SPROG_GLASSWARP, 0 },
+	{ "heat_haze.vert", "heat_haze.frag", SPROG_HEAT_HAZE, 0 },
+	{ "heat_haze_with_mask.vert", "heat_haze_with_mask.frag", SPROG_HEAT_HAZE_WITH_MASK, 0 },
+	{ "heat_haze_with_mask_and_vertex.vert", "heat_haze_with_mask_and_vertex.frag", SPROG_HEAT_HAZE_WITH_MASK_AND_VERTEX, 0 },
+	{ "color_process.vert", "color_process.frag", SPROG_COLOR_PROCESS, 0 }
+};
+
+typedef struct arbToProgram_t arbToProgram_t;
+struct arbToProgram_t {
+	char program_name[64];
+	program_t id;
+};
+
+static const int MAX_ARB_TO_PROGRAM = 4;
+
+static arbToProgram_t arb_to_program[MAX_ARB_TO_PROGRAM] = {
+	{ "heatHaze.vfp", SPROG_HEAT_HAZE },
+	{ "heatHazeWithMask.vfp", SPROG_HEAT_HAZE_WITH_MASK },
+	{ "heatHazeWithMaskAndVertex.vfp", SPROG_HEAT_HAZE_WITH_MASK_AND_VERTEX },
+	{ "colorProcess.vfp", SPROG_COLOR_PROCESS }
 };
 
 GLuint R_LoadPartShader(idStr path, GLuint type) {
@@ -631,9 +650,23 @@ a text file if it hasn't already been loaded.
 ==================
 */
 int R_FindARBProgram( GLenum target, const char *program ) {
-	common->Printf( "mock FindARBProgram: %s\n", program );
+	common->Printf( "Search for ARB->GLSL program (%s): ", program );
+	int i;
+	for (i = 0; arb_to_program[i].program_name[0]; i++) {
+		if (idStr::Icmp(arb_to_program[i].program_name, program) == 0) {
+			common->Printf("OK\n");
+			return arb_to_program[i].id;
+		}
+	}
+
+	common->Printf("!!! NOT FOUND\n");
+
+	if ( i == MAX_ARB_TO_PROGRAM ) {
+		common->Error( "R_FindARBProgram: ARB->GLSL program not found" );
+	}
+
 	return 0;
-	/**
+	/*
 	int		i;
 	idStr	stripped = program;
 
