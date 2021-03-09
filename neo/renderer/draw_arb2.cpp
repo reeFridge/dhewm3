@@ -49,6 +49,7 @@ static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
 	{ "shadow.vert", "shadow.frag", SPROG_SHADOW, 0 },
 	{ "light_scale.vert", "light_scale.frag", SPROG_LIGHT_SCALE, 0 },
 	{ "shader_pass.vert", "shader_pass.frag", SPROG_SHADER_PASS, 0 },
+	{ "cube_shader_pass.vert", "cube_shader_pass.frag", SPROG_CUBE_SHADER_PASS, 0 },
 	{ "environment.vert", "environment.frag", SPROG_ENV, 0 },
 	{ "bumpy_environment.vert", "bumpy_environment.frag", SPROG_BUMPY_ENV, 0 },
 	{ "glasswarp.vert", "glasswarp.frag", SPROG_GLASSWARP, 0 },

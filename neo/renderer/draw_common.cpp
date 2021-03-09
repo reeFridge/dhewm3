@@ -98,18 +98,16 @@ void RB_PrepareStageTexturing( const shaderStage_t *pStage,  const drawSurf_t *s
 	// texgens
 	const texgen_t tg = pStage->texture.texgen;
 	if ( tg == TG_DIFFUSE_CUBE ) {
-		common->Printf("!!! TODO: TG_DIFFUSE_CUBE \n");
 		// convert to qglVertexAttribPointer @fridge
 		// qglTexCoordPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
-		qglVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, sizeof(idDrawVert), (void*)ac->normal.ToFloatPtr());
+		qglVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(idDrawVert), (void*)ac->normal.ToFloatPtr());
 	}
 
 	if ( tg == TG_SKYBOX_CUBE || tg == TG_WOBBLESKY_CUBE ) {
-		common->Printf("!!! TODO: TG_SKYBOX_CUBE || TG_WOBBLESKY_CUBE \n");
 		// convert to qglVertexAttribPointer @fridge
 		// qglTexCoordPointer( 3, GL_FLOAT, 0, vertexCache.Position( surf->dynamicTexCoords ) );
 		// not vbo @fridge
-		qglVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, 0, vertexCache.Position( surf->dynamicTexCoords ));
+		qglVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, 0, vertexCache.Position( surf->dynamicTexCoords ));
 	}
 
 	if ( tg == TG_SCREEN ) {
@@ -980,6 +978,10 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 		// select shader program
 		const texgen_t tg = pStage->texture.texgen;
 
+		if ( tg == TG_DIFFUSE_CUBE || tg == TG_SKYBOX_CUBE || tg == TG_WOBBLESKY_CUBE ) {
+			shader_prog = R_FindShaderProgram(SPROG_CUBE_SHADER_PASS);
+		}
+
 		if (tg == TG_REFLECT_CUBE) {
 			const shaderStage_t *bumpStage = surf->material->GetBumpStage();
 			if (bumpStage) {
@@ -987,7 +989,9 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 			} else {
 				shader_prog = R_FindShaderProgram(SPROG_ENV);
 			}
-		} else if ( tg == TG_GLASSWARP ) {
+		}
+		
+		if ( tg == TG_GLASSWARP ) {
 			shader_prog = R_FindShaderProgram(SPROG_GLASSWARP);
 		}
 
@@ -1074,6 +1078,7 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 		GL_State( pStage->drawStateBits );
 
 		RB_PrepareStageTexturing( pStage, surf, ac ); // may bind the texture
+
 		qglUniform1i(qglGetUniformLocation(shader_prog, "texture_0"), 0);
 		qglUniform1i(qglGetUniformLocation(shader_prog, "texture_1"), 1);
 
