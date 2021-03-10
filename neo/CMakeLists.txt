@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(dhewm3)
 
 # TODO
@@ -170,6 +170,10 @@ include_directories(${VORBISFILE_INCLUDE_DIR})
 
 find_package(OpenAL REQUIRED)
 include_directories(${OPENAL_INCLUDE_DIR})
+
+set(GLAD_SOURCES_DIR "${PROJECT_SOURCE_DIR}/../extern/glad")
+add_subdirectory("${GLAD_SOURCES_DIR}/cmake" glad_cmake)
+glad_add_library(glad_gl_core_33 STATIC API gl:core=3.3)
 
 if (SDL2)
 	# skip SDL2main
@@ -1018,6 +1022,7 @@ if(CORE)
 	set_target_properties(${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist)
 
 	target_link_libraries(${DHEWM3BINARY}
+		glad_gl_core_33
 		idlib
 		${OPENAL_LIBRARY}
 		${VORBISFILE_LIBRARIES}

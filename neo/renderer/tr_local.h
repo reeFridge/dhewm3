@@ -1066,6 +1066,18 @@ typedef struct {
 	int			multiSamples;
 } glimpParms_t;
 
+typedef void (*GLExtension_t)(void);
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+GLExtension_t GLimp_ExtensionPointer( const char *name );
+
+#ifdef __cplusplus
+	}
+#endif
+
 bool		GLimp_Init( glimpParms_t parms );
 // If the desired mode can't be set satisfactorily, false will be returned.
 // The renderer will then reset the glimpParms to "safe mode" of 640x480

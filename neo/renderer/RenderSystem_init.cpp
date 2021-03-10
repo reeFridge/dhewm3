@@ -39,6 +39,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "ui/UserInterface.h"
 
 #include "renderer/tr_local.h"
+#include <glad/gl.h>
 
 #include "framework/GameCallbacks_local.h"
 
@@ -231,6 +232,7 @@ idCVar r_useCarmacksReverse( "r_useCarmacksReverse", "1", CVAR_RENDERER | CVAR_A
 idCVar r_useStencilOpSeparate( "r_useStencilOpSeparate", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Use glStencilOpSeparate() (if available) when rendering shadows" );
 
 // define qgl functions
+/*
 #define QGLPROC(name, rettype, args) rettype (APIENTRYP q##name) args;
 #include "renderer/qgl_proc.h"
 
@@ -281,6 +283,7 @@ PFNGLDEPTHBOUNDSEXTPROC                 qglDepthBoundsEXT;
 
 // DG: couldn't find any extension for this, it's supported in GL2.0 and newer, incl OpenGL ES2.0
 PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+*/
 
 /*
 =================
@@ -289,9 +292,9 @@ R_CheckExtension
 */
 bool R_CheckExtension( const char *name ) {
 	GLint n = 0;
-	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	glGetIntegerv(GL_NUM_EXTENSIONS, &n);
 	for (GLint i = 0; i < n; i++) {
-		const char* ext = (const char*)qglGetStringi(GL_EXTENSIONS, i);
+		const char* ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
 		if (!strcmp(name, ext)) {
 			common->Printf( "...using %s\n", name );
 			return true;
@@ -331,7 +334,7 @@ static void R_CheckPortableExtensions( void ) {
 	*/
 	// core
 	glConfig.multitextureAvailable = true;
-	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (GLint *)&glConfig.maxTextureImageUnits);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (GLint *)&glConfig.maxTextureImageUnits);
 
 	// GL_ARB_texture_env_combine
 	//glConfig.textureEnvCombineAvailable = R_CheckExtension( "GL_ARB_texture_env_combine" );
@@ -361,8 +364,8 @@ static void R_CheckPortableExtensions( void ) {
 		glConfig.textureCompressionAvailable = true;
 		//qglCompressedTexImage2DARB = (PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)GLimp_ExtensionPointer( "glCompressedTexImage2DARB" );
 		//qglGetCompressedTexImageARB = (PFNGLGETCOMPRESSEDTEXIMAGEARBPROC)GLimp_ExtensionPointer( "glGetCompressedTexImageARB" );
-		qglCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)GLimp_ExtensionPointer( "glCompressedTexImage2D" );
-		qglGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)GLimp_ExtensionPointer( "glGetCompressedTexImage" );
+		//qglCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)GLimp_ExtensionPointer( "glCompressedTexImage2D" );
+		//qglGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)GLimp_ExtensionPointer( "glGetCompressedTexImage" );
 	} else {
 		glConfig.textureCompressionAvailable = false;
 	}
@@ -370,7 +373,7 @@ static void R_CheckPortableExtensions( void ) {
 	// GL_EXT_texture_filter_anisotropic
 	glConfig.anisotropicAvailable = R_CheckExtension( "GL_EXT_texture_filter_anisotropic" );
 	if ( glConfig.anisotropicAvailable ) {
-		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureAnisotropy );
+		glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureAnisotropy );
 		common->Printf( "   maxTextureAnisotropy: %f\n", glConfig.maxTextureAnisotropy );
 	} else {
 		glConfig.maxTextureAnisotropy = 1;
@@ -390,15 +393,17 @@ static void R_CheckPortableExtensions( void ) {
 	// GL_EXT_shared_texture_palette
 	glConfig.sharedTexturePaletteAvailable = R_CheckExtension( "GL_EXT_shared_texture_palette" );
 	if ( glConfig.sharedTexturePaletteAvailable ) {
-		qglColorTableEXT = ( void ( APIENTRY * ) ( int, int, int, int, int, const void * ) ) GLimp_ExtensionPointer( "glColorTableEXT" );
+		//qglColorTableEXT = ( void ( APIENTRY * ) ( int, int, int, int, int, const void * ) ) GLimp_ExtensionPointer( "glColorTableEXT" );
 	}
 
 	// GL_EXT_texture3D (not currently used for anything)
 	glConfig.texture3DAvailable = R_CheckExtension( "GL_EXT_texture3D" );
 	if ( glConfig.texture3DAvailable ) {
+		/*
 		qglTexImage3D =
 			(void (APIENTRY *)(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *) )
 			GLimp_ExtensionPointer( "glTexImage3D" );
+		*/
 	}
 
 	// EXT_stencil_wrap
@@ -416,15 +421,15 @@ static void R_CheckPortableExtensions( void ) {
 	// GL_EXT_stencil_two_side
 	glConfig.twoSidedStencilAvailable = R_CheckExtension( "GL_EXT_stencil_two_side" );
 	if ( glConfig.twoSidedStencilAvailable )
-		qglActiveStencilFaceEXT = (PFNGLACTIVESTENCILFACEEXTPROC)GLimp_ExtensionPointer( "glActiveStencilFaceEXT" );
+		//qglActiveStencilFaceEXT = (PFNGLACTIVESTENCILFACEEXTPROC)GLimp_ExtensionPointer( "glActiveStencilFaceEXT" );
 
 	if( glConfig.glVersion >= 2.0) {
 		common->Printf( "... got GL2.0+ glStencilOpSeparate()\n" );
-		qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)GLimp_ExtensionPointer( "glStencilOpSeparate" );
+		//qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)GLimp_ExtensionPointer( "glStencilOpSeparate" );
 	} else {
 		// TODO: there was an extension by ATI providing glStencilOpSeparateATI - do we care?
 		common->Printf( "... don't have GL2.0+ glStencilOpSeparate()\n" );
-		qglStencilOpSeparate = NULL;
+		//qglStencilOpSeparate = NULL;
 	}
 
 	// ARB_vertex_buffer_object
@@ -490,7 +495,7 @@ static void R_CheckPortableExtensions( void ) {
 	// GL_EXT_depth_bounds_test
 	glConfig.depthBoundsTestAvailable = R_CheckExtension( "EXT_depth_bounds_test" );
 	if ( glConfig.depthBoundsTestAvailable ) {
-		qglDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC)GLimp_ExtensionPointer( "glDepthBoundsEXT" );
+		//qglDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC)GLimp_ExtensionPointer( "glDepthBoundsEXT" );
 	}
 
 }
@@ -712,24 +717,31 @@ void R_InitOpenGL( void ) {
 	}
 
 // load qgl function pointers
+/*
 #define QGLPROC(name, rettype, args) \
 	q##name = (rettype(APIENTRYP)args)GLimp_ExtensionPointer(#name); \
 	if (!q##name) \
 		common->FatalError("Unable to initialize OpenGL (%s)", #name);
 
 #include "renderer/qgl_proc.h"
+*/
+	int version = gladLoadGL((GLADloadfunc)GLimp_ExtensionPointer);
+	if (version == 0) {
+		common->FatalError("Unable to initialize OpenGL");
+	}
+	common->Printf("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
 	// input and sound systems need to be tied to the new window
 	Sys_InitInput();
 	soundSystem->InitHW();
 
 	// get our config strings
-	glConfig.vendor_string = (const char *)qglGetString(GL_VENDOR);
-	glConfig.renderer_string = (const char *)qglGetString(GL_RENDERER);
-	glConfig.version_string = (const char *)qglGetString(GL_VERSION);
+	glConfig.vendor_string = (const char *)glGetString(GL_VENDOR);
+	glConfig.renderer_string = (const char *)glGetString(GL_RENDERER);
+	glConfig.version_string = (const char *)glGetString(GL_VERSION);
 
 	// OpenGL driver constants
-	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &temp );
+	glGetIntegerv( GL_MAX_TEXTURE_SIZE, &temp );
 	glConfig.maxTextureSize = temp;
 
 	// stubbed or broken drivers may have reported 0...
@@ -801,7 +813,7 @@ void GL_CheckErrors( void ) {
 
 	// check for up to 10 errors pending
 	for ( i = 0 ; i < 10 ; i++ ) {
-		err = qglGetError();
+		err = glGetError();
 		if ( err == GL_NO_ERROR ) {
 			return;
 		}
@@ -1126,7 +1138,7 @@ R_RenderingFPS
 ================
 */
 static float R_RenderingFPS( const renderView_t *renderView ) {
-	qglFinish();
+	glFinish();
 
 	int		start = Sys_Milliseconds();
 	static const int SAMPLE_MSEC = 1000;
@@ -1138,7 +1150,7 @@ static float R_RenderingFPS( const renderView_t *renderView ) {
 		renderSystem->BeginFrame( glConfig.vidWidth, glConfig.vidHeight );
 		tr.primaryWorld->RenderScene( renderView );
 		renderSystem->EndFrame( NULL, NULL );
-		qglFinish();
+		glFinish();
 		count++;
 		end = Sys_Milliseconds();
 		if ( end - start > SAMPLE_MSEC ) {
@@ -1244,8 +1256,8 @@ void R_ReadTiledPixels( int width, int height, byte *buffer, renderView_t *ref =
 				h = height - yo;
 			}
 
-			qglReadBuffer( GL_FRONT );
-			qglReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, temp );
+			glReadBuffer( GL_FRONT );
+			glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, temp );
 
 			int	row = ( w * 3 + 3 ) & ~3;		// OpenGL pads to dword boundaries
 
@@ -1318,7 +1330,7 @@ void idRenderSystemLocal::TakeScreenshot( int width, int height, const char *fil
 		r_jitter.SetBool( false );
 	}
 
-	// fill in the header (this is vertically flipped, which qglReadPixels emits)
+	// fill in the header (this is vertically flipped, which glReadPixels emits)
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = width & 255;
 	buffer[13] = width >> 8;
@@ -1478,7 +1490,7 @@ void R_StencilShot( void ) {
 
 	byte *byteBuffer = (byte *)Mem_Alloc(pix);
 
-	qglReadPixels( 0, 0, width, height, GL_STENCIL_INDEX , GL_UNSIGNED_BYTE, byteBuffer );
+	glReadPixels( 0, 0, width, height, GL_STENCIL_INDEX , GL_UNSIGNED_BYTE, byteBuffer );
 
 	for ( i = 0 ; i < pix ; i++ ) {
 		buffer[18+i*3] =
@@ -1487,7 +1499,7 @@ void R_StencilShot( void ) {
 		buffer[18+i*3+2] = byteBuffer[i];
 	}
 
-	// fill in the header (this is vertically flipped, which qglReadPixels emits)
+	// fill in the header (this is vertically flipped, which glReadPixels emits)
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = width & 255;
 	buffer[13] = width >> 8;
@@ -1971,7 +1983,7 @@ void R_VidRestart_f( const idCmdArgs &args ) {
 	R_RegenerateWorld_f( idCmdArgs() );
 
 	// check for problems
-	err = qglGetError();
+	err = glGetError();
 	if ( err != GL_NO_ERROR ) {
 		common->Printf( "glGetError() = 0x%x\n", err );
 	}
@@ -2254,7 +2266,7 @@ void idRenderSystemLocal::InitOpenGL( void ) {
 
 		globalImages->ReloadAllImages();
 
-		err = qglGetError();
+		err = glGetError();
 		if ( err != GL_NO_ERROR ) {
 			common->Printf( "glGetError() = 0x%x\n", err );
 		}
