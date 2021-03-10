@@ -26,7 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include <glad/gl.h>
 #include <SDL.h>
+#include <SDL_opengl.h>
 
 #include "sys/platform.h"
 #include "framework/Licensee.h"

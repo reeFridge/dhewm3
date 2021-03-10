@@ -94,16 +94,16 @@ GLuint R_LoadPartShader(idStr path, GLuint type) {
 		return 0;
 	}
 
-	GLuint ref = qglCreateShader(type);
-	qglShaderSource(ref, 1, &buffer, NULL);
-	qglCompileShader(ref);
+	GLuint ref = glCreateShader(type);
+	glShaderSource(ref, 1, &buffer, NULL);
+	glCompileShader(ref);
 	int success;
 	char log[512];
-	qglGetShaderiv(ref, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(ref, GL_COMPILE_STATUS, &success);
 
 	if (!success)
 	{
-		qglGetShaderInfoLog(ref, 512, NULL, log);
+		glGetShaderInfoLog(ref, 512, NULL, log);
 		common->Printf("Error: shader compilation failed\n%s\n", log);
 		return 0;
 	}
@@ -129,20 +129,20 @@ void R_LoadShaderProgram(int progIdx) {
 		return;
 	}
 
-	GLuint program = qglCreateProgram();
-	qglAttachShader(program, vs);
-	qglAttachShader(program, fs);
-	qglLinkProgram(program);
+	GLuint program = glCreateProgram();
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
+	glLinkProgram(program);
 
-	qglDeleteShader(vs);
-	qglDeleteShader(fs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
 
 	int success;
 	char log[512];
-	qglGetProgramiv(program, GL_LINK_STATUS, &success);
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		qglGetProgramInfoLog(program, 512, NULL, log);
+		glGetProgramInfoLog(program, 512, NULL, log);
 		printf("Error: program compilation failed\n%s\n", log);
 		return;
 	}
@@ -189,8 +189,8 @@ GL_SelectTextureNoClient
 */
 static void GL_SelectTextureNoClient( int unit ) {
 	backEnd.glState.currenttmu = unit;
-	//qglActiveTextureARB( GL_TEXTURE0_ARB + unit );
-	qglActiveTexture(GL_TEXTURE0 + unit);
+	//glActiveTextureARB( GL_TEXTURE0_ARB + unit );
+	glActiveTexture(GL_TEXTURE0 + unit);
 }
 
 /*
@@ -202,41 +202,41 @@ void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 	GLuint shader = R_FindShaderProgram(SPROG_INTERACTION);
 
 	// load all the vertex program parameters
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_ORIGIN, din->localLightOrigin.ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "light_origin"), 1, din->localLightOrigin.ToFloatPtr());
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_VIEW_ORIGIN, din->localViewOrigin.ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "view_origin"), 1, din->localViewOrigin.ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_ORIGIN, din->localLightOrigin.ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "light_origin"), 1, din->localLightOrigin.ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_VIEW_ORIGIN, din->localViewOrigin.ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "view_origin"), 1, din->localViewOrigin.ToFloatPtr());
 
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_PROJECT_S, din->lightProjection[0].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "light_project_s"), 1, din->lightProjection[0].ToFloatPtr());
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_PROJECT_T, din->lightProjection[1].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "light_project_t"), 1, din->lightProjection[1].ToFloatPtr());
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_PROJECT_Q, din->lightProjection[2].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "light_project_q"), 1, din->lightProjection[2].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_PROJECT_S, din->lightProjection[0].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "light_project_s"), 1, din->lightProjection[0].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_PROJECT_T, din->lightProjection[1].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "light_project_t"), 1, din->lightProjection[1].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_PROJECT_Q, din->lightProjection[2].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "light_project_q"), 1, din->lightProjection[2].ToFloatPtr());
 
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_FALLOFF_S, din->lightProjection[3].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "light_falloff_s"), 1, din->lightProjection[3].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_LIGHT_FALLOFF_S, din->lightProjection[3].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "light_falloff_s"), 1, din->lightProjection[3].ToFloatPtr());
 
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_BUMP_MATRIX_S, din->bumpMatrix[0].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "bump_matrix_s"), 1, din->bumpMatrix[0].ToFloatPtr());
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_BUMP_MATRIX_T, din->bumpMatrix[1].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "bump_matrix_t"), 1, din->bumpMatrix[1].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_BUMP_MATRIX_S, din->bumpMatrix[0].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "bump_matrix_s"), 1, din->bumpMatrix[0].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_BUMP_MATRIX_T, din->bumpMatrix[1].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "bump_matrix_t"), 1, din->bumpMatrix[1].ToFloatPtr());
 
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_S, din->diffuseMatrix[0].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "diffuse_matrix_s"), 1, din->diffuseMatrix[0].ToFloatPtr());
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_T, din->diffuseMatrix[1].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "diffuse_matrix_t"), 1, din->diffuseMatrix[1].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_S, din->diffuseMatrix[0].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "diffuse_matrix_s"), 1, din->diffuseMatrix[0].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_T, din->diffuseMatrix[1].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "diffuse_matrix_t"), 1, din->diffuseMatrix[1].ToFloatPtr());
 
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_SPECULAR_MATRIX_S, din->specularMatrix[0].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "specular_matrix_s"), 1, din->specularMatrix[0].ToFloatPtr());
-	//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_SPECULAR_MATRIX_T, din->specularMatrix[1].ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "specular_matrix_t"), 1, din->specularMatrix[1].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_SPECULAR_MATRIX_S, din->specularMatrix[0].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "specular_matrix_s"), 1, din->specularMatrix[0].ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_SPECULAR_MATRIX_T, din->specularMatrix[1].ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "specular_matrix_t"), 1, din->specularMatrix[1].ToFloatPtr());
 
 	// testing fragment based normal mapping
 	if ( r_testARBProgram.GetBool() ) {
 		/*
-		qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 2, din->localLightOrigin.ToFloatPtr() );
-		qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 3, din->localViewOrigin.ToFloatPtr() );
+		glProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 2, din->localLightOrigin.ToFloatPtr() );
+		glProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 3, din->localViewOrigin.ToFloatPtr() );
 		*/
 	}
 
@@ -246,56 +246,56 @@ void	RB_ARB2_DrawInteraction( const drawInteraction_t *din ) {
 
 	switch ( din->vertexColor ) {
 	case SVC_IGNORE:
-		qglUniform4fv(qglGetUniformLocation(shader, "color_modulate"), 1, zero);
-		qglUniform4fv(qglGetUniformLocation(shader, "color_add"), 1, one);
-		//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_MODULATE, zero );
-		//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_ADD, one );
+		glUniform4fv(glGetUniformLocation(shader, "color_modulate"), 1, zero);
+		glUniform4fv(glGetUniformLocation(shader, "color_add"), 1, one);
+		//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_MODULATE, zero );
+		//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_ADD, one );
 		break;
 	case SVC_MODULATE:
-		qglUniform4fv(qglGetUniformLocation(shader, "color_modulate"), 1, one);
-		qglUniform4fv(qglGetUniformLocation(shader, "color_add"), 1, zero);
-		//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_MODULATE, one );
-		//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_ADD, zero );
+		glUniform4fv(glGetUniformLocation(shader, "color_modulate"), 1, one);
+		glUniform4fv(glGetUniformLocation(shader, "color_add"), 1, zero);
+		//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_MODULATE, one );
+		//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_ADD, zero );
 		break;
 	case SVC_INVERSE_MODULATE:
-		qglUniform4fv(qglGetUniformLocation(shader, "color_modulate"), 1, negOne);
-		qglUniform4fv(qglGetUniformLocation(shader, "color_add"), 1, one);
-		//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_MODULATE, negOne );
-		//qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_ADD, one );
+		glUniform4fv(glGetUniformLocation(shader, "color_modulate"), 1, negOne);
+		glUniform4fv(glGetUniformLocation(shader, "color_add"), 1, one);
+		//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_MODULATE, negOne );
+		//glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_COLOR_ADD, one );
 		break;
 	}
 
 	// set the constant colors
-	//qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 0, din->diffuseColor.ToFloatPtr() );
-	//qglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 1, din->specularColor.ToFloatPtr() );
-	qglUniform4fv(qglGetUniformLocation(shader, "diffuse_color_const"), 1, din->diffuseColor.ToFloatPtr());
-	qglUniform4fv(qglGetUniformLocation(shader, "specular_color_const"), 1, din->specularColor.ToFloatPtr());
+	//glProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 0, din->diffuseColor.ToFloatPtr() );
+	//glProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, 1, din->specularColor.ToFloatPtr() );
+	glUniform4fv(glGetUniformLocation(shader, "diffuse_color_const"), 1, din->diffuseColor.ToFloatPtr());
+	glUniform4fv(glGetUniformLocation(shader, "specular_color_const"), 1, din->specularColor.ToFloatPtr());
 
 	// set the textures
 
 	// texture 1 will be the per-surface bump map
 	GL_SelectTextureNoClient( 1 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_bump_map"), 1);
+	glUniform1i(glGetUniformLocation(shader, "t_bump_map"), 1);
 	din->bumpImage->Bind();
 
 	// texture 2 will be the light falloff texture
 	GL_SelectTextureNoClient( 2 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_falloff"), 2);
+	glUniform1i(glGetUniformLocation(shader, "t_falloff"), 2);
 	din->lightFalloffImage->Bind();
 
 	// texture 3 will be the light projection texture
 	GL_SelectTextureNoClient( 3 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_projection"), 3);
+	glUniform1i(glGetUniformLocation(shader, "t_projection"), 3);
 	din->lightImage->Bind();
 
 	// texture 4 is the per-surface diffuse map
 	GL_SelectTextureNoClient( 4 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_diffuse_map"), 4);
+	glUniform1i(glGetUniformLocation(shader, "t_diffuse_map"), 4);
 	din->diffuseImage->Bind();
 
 	// texture 5 is the per-surface specular map
 	GL_SelectTextureNoClient( 5 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_specular_map"), 5);
+	glUniform1i(glGetUniformLocation(shader, "t_specular_map"), 5);
 	din->specularImage->Bind();
 
 	// draw it
@@ -320,34 +320,34 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 
 	// bind the vertex program
 	if ( r_testARBProgram.GetBool() ) {
-		//qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_TEST );
-		//qglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, FPROG_TEST );
+		//glBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_TEST );
+		//glBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, FPROG_TEST );
 	} else {
-		//qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_INTERACTION );
-		//qglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, FPROG_INTERACTION );
-		qglUseProgram(shader);
+		//glBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_INTERACTION );
+		//glBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, FPROG_INTERACTION );
+		glUseProgram(shader);
 	}
 
 
-	//qglEnable(GL_VERTEX_PROGRAM_ARB);
-	//qglEnable(GL_FRAGMENT_PROGRAM_ARB);
+	//glEnable(GL_VERTEX_PROGRAM_ARB);
+	//glEnable(GL_FRAGMENT_PROGRAM_ARB);
 
 	// enable the vertex arrays
-	//qglEnableVertexAttribArrayARB( 8 );
-	//qglEnableVertexAttribArrayARB( 9 );
-	//qglEnableVertexAttribArrayARB( 10 );
-	//qglEnableVertexAttribArrayARB( 11 );
-	qglEnableVertexAttribArray( 8 );
-	qglEnableVertexAttribArray( 9 );
-	qglEnableVertexAttribArray( 10 );
-	qglEnableVertexAttribArray( 11 );
-	qglEnableVertexAttribArray( 0 );
-	qglEnableVertexAttribArray( 1 );
-	//qglEnableClientState( GL_COLOR_ARRAY );
+	//glEnableVertexAttribArrayARB( 8 );
+	//glEnableVertexAttribArrayARB( 9 );
+	//glEnableVertexAttribArrayARB( 10 );
+	//glEnableVertexAttribArrayARB( 11 );
+	glEnableVertexAttribArray( 8 );
+	glEnableVertexAttribArray( 9 );
+	glEnableVertexAttribArray( 10 );
+	glEnableVertexAttribArray( 11 );
+	glEnableVertexAttribArray( 0 );
+	glEnableVertexAttribArray( 1 );
+	//glEnableClientState( GL_COLOR_ARRAY );
 
 	// texture 0 is the normalization cube map for the vector towards the light
 	GL_SelectTextureNoClient( 0 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_cube_map"), 0);
+	glUniform1i(glGetUniformLocation(shader, "t_cube_map"), 0);
 	if ( backEnd.vLight->lightShader->IsAmbientLight() ) {
 		globalImages->ambientNormalMap->Bind();
 	} else {
@@ -356,7 +356,7 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 
 	// texture 6 is the specular lookup table
 	GL_SelectTextureNoClient( 6 );
-	qglUniform1i(qglGetUniformLocation(shader, "t_specular_lookup"), 6);
+	glUniform1i(glGetUniformLocation(shader, "t_specular_lookup"), 6);
 	if ( r_testARBProgram.GetBool() ) {
 		globalImages->specular2DTableImage->Bind();	// variable specularity in alpha channel
 	} else {
@@ -364,36 +364,36 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 	}
 
 	// default matrices
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
 
 	for ( ; surf ; surf=surf->nextOnLight ) {
 		// perform setup here that will not change over multiple interaction passes
 
 		// set the vertex pointers
 		idDrawVert	*ac = (idDrawVert *)vertexCache.Position( surf->geo->ambientCache );
-		qglVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
-		qglVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
-		qglVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
-		qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->st.ToFloatPtr());
-		qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->xyz.ToFloatPtr());
-		qglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color);
-		//qglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), ac->color );
-		//qglVertexPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->xyz.ToFloatPtr() );
+		glVertexAttribPointer( 11, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+		glVertexAttribPointer( 10, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
+		glVertexAttribPointer( 9, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+		glVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->st.ToFloatPtr());
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->xyz.ToFloatPtr());
+		glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( idDrawVert ), ac->color);
+		//glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), ac->color );
+		//glVertexPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->xyz.ToFloatPtr() );
 
 		// this may cause RB_ARB2_DrawInteraction to be exacuted multiple
 		// times with different colors and images if the surface or light have multiple layers
 		RB_CreateSingleDrawInteractions( surf, RB_ARB2_DrawInteraction );
 	}
 
-	qglDisableVertexAttribArray( 8 );
-	qglDisableVertexAttribArray( 9 );
-	qglDisableVertexAttribArray( 10 );
-	qglDisableVertexAttribArray( 11 );
-	qglDisableVertexAttribArray( 0 );
-	qglDisableVertexAttribArray( 1 );
-	//qglDisableClientState( GL_COLOR_ARRAY );
+	glDisableVertexAttribArray( 8 );
+	glDisableVertexAttribArray( 9 );
+	glDisableVertexAttribArray( 10 );
+	glDisableVertexAttribArray( 11 );
+	glDisableVertexAttribArray( 0 );
+	glDisableVertexAttribArray( 1 );
+	//glDisableClientState( GL_COLOR_ARRAY );
 
 	// disable features
 	/*
@@ -420,9 +420,9 @@ void RB_ARB2_CreateDrawInteractions( const drawSurf_t *surf ) {
 	backEnd.glState.currenttmu = -1;
 	GL_SelectTexture( 0 );
 
-	//qglDisable(GL_VERTEX_PROGRAM_ARB);
-	//qglDisable(GL_FRAGMENT_PROGRAM_ARB);
-	qglUseProgram(0);
+	//glDisable(GL_VERTEX_PROGRAM_ARB);
+	//glDisable(GL_FRAGMENT_PROGRAM_ARB);
+	glUseProgram(0);
 }
 
 
@@ -435,7 +435,7 @@ void RB_ARB2_DrawInteractions( void ) {
 	viewLight_t		*vLight;
 
 	GL_SelectTexture( 0 );
-	//qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	//glDisableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	//
 	// for each light, perform adding and shadowing
@@ -460,34 +460,34 @@ void RB_ARB2_DrawInteractions( void ) {
 		if ( vLight->globalShadows || vLight->localShadows ) {
 			backEnd.currentScissor = vLight->scissorRect;
 			if ( r_useScissor.GetBool() ) {
-				qglScissor( backEnd.viewDef->viewport.x1 + backEnd.currentScissor.x1,
+				glScissor( backEnd.viewDef->viewport.x1 + backEnd.currentScissor.x1,
 					backEnd.viewDef->viewport.y1 + backEnd.currentScissor.y1,
 					backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 					backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
 			}
-			qglClear( GL_STENCIL_BUFFER_BIT );
+			glClear( GL_STENCIL_BUFFER_BIT );
 		} else {
 			// no shadows, so no need to read or write the stencil buffer
 			// we might in theory want to use GL_ALWAYS instead of disabling
 			// completely, to satisfy the invarience rules
-			qglStencilFunc( GL_ALWAYS, 128, 255 );
+			glStencilFunc( GL_ALWAYS, 128, 255 );
 		}
 
 		if ( r_useShadowVertexProgram.GetBool() ) {
 			/*
-			qglEnable( GL_VERTEX_PROGRAM_ARB );
-			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
+			glEnable( GL_VERTEX_PROGRAM_ARB );
+			glBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
 			*/
 			RB_StencilShadowPass( vLight->globalShadows );
 			RB_ARB2_CreateDrawInteractions( vLight->localInteractions );
 			/*
-			qglEnable( GL_VERTEX_PROGRAM_ARB );
-			qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
+			glEnable( GL_VERTEX_PROGRAM_ARB );
+			glBindProgramARB( GL_VERTEX_PROGRAM_ARB, VPROG_STENCIL_SHADOW );
 			*/
 			RB_StencilShadowPass( vLight->localShadows );
 			RB_ARB2_CreateDrawInteractions( vLight->globalInteractions );
 			/*
-			qglDisable( GL_VERTEX_PROGRAM_ARB );	// if there weren't any globalInteractions, it would have stayed on
+			glDisable( GL_VERTEX_PROGRAM_ARB );	// if there weren't any globalInteractions, it would have stayed on
 			*/
 		}
 /*
@@ -503,7 +503,7 @@ void RB_ARB2_DrawInteractions( void ) {
 			continue;
 		}
 
-		qglStencilFunc( GL_ALWAYS, 128, 255 );
+		glStencilFunc( GL_ALWAYS, 128, 255 );
 
 		backEnd.depthFunc = GLS_DEPTHFUNC_LESS;
 		RB_ARB2_CreateDrawInteractions( vLight->translucentInteractions );
@@ -512,10 +512,10 @@ void RB_ARB2_DrawInteractions( void ) {
 	}
 
 	// disable stencil shadow test
-	qglStencilFunc( GL_ALWAYS, 128, 255 );
+	glStencilFunc( GL_ALWAYS, 128, 255 );
 
 	GL_SelectTexture( 0 );
-	//qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	//glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
 //===================================================================================
@@ -616,16 +616,16 @@ void R_LoadARBProgram( int progIndex ) {
 	}
 	end[3] = 0;
 
-	qglBindProgramARB( progs[progIndex].target, progs[progIndex].ident );
-	qglGetError();
+	glBindProgramARB( progs[progIndex].target, progs[progIndex].ident );
+	glGetError();
 
-	qglProgramStringARB( progs[progIndex].target, GL_PROGRAM_FORMAT_ASCII_ARB,
+	glProgramStringARB( progs[progIndex].target, GL_PROGRAM_FORMAT_ASCII_ARB,
 		strlen( start ), start );
 
-	err = qglGetError();
-	qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, (GLint *)&ofs );
+	err = glGetError();
+	glGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, (GLint *)&ofs );
 	if ( err == GL_INVALID_OPERATION ) {
-		const GLubyte *str = qglGetString( GL_PROGRAM_ERROR_STRING_ARB );
+		const GLubyte *str = glGetString( GL_PROGRAM_ERROR_STRING_ARB );
 		common->Printf( "\nGL_PROGRAM_ERROR_STRING_ARB: %s\n", str );
 		if ( ofs < 0 ) {
 			common->Printf( "GL_PROGRAM_ERROR_POSITION_ARB < 0 with error\n" );

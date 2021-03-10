@@ -73,8 +73,8 @@ void idVertexCache::ActuallyFree( vertCache_t *block ) {
 		if ( block->vbo ) {
 #if 0		// this isn't really necessary, it will be reused soon enough
 			// filling with zero length data is the equivalent of freeing
-			//qglBindBufferARB(GL_ARRAY_BUFFER_ARB, block->vbo);
-			//qglBufferDataARB(GL_ARRAY_BUFFER_ARB, 0, 0, GL_DYNAMIC_DRAW_ARB);
+			//glBindBufferARB(GL_ARRAY_BUFFER_ARB, block->vbo);
+			//glBufferDataARB(GL_ARRAY_BUFFER_ARB, 0, 0, GL_DYNAMIC_DRAW_ARB);
 #endif
 		} else if ( block->virtMem ) {
 			Mem_Free( block->virtMem );
@@ -128,9 +128,9 @@ void *idVertexCache::Position( vertCache_t *buffer ) {
 		}
 
 		if ( buffer->indexBuffer ) {
-			qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, buffer->vbo );
+			glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, buffer->vbo );
 		} else {
-			qglBindBuffer( GL_ARRAY_BUFFER, buffer->vbo );
+			glBindBuffer( GL_ARRAY_BUFFER, buffer->vbo );
 		}
 
 		return (void *)buffer->offset;
@@ -141,7 +141,7 @@ void *idVertexCache::Position( vertCache_t *buffer ) {
 }
 
 void idVertexCache::UnbindIndex() {
-	qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 }
 
 
@@ -182,8 +182,8 @@ void idVertexCache::Init() {
 	staticAllocTotal = 0;
 
 	// global vao
-	qglGenVertexArrays(1, &vao);
-	qglBindVertexArray(vao);
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	byte	*junk = (byte *)Mem_Alloc( frameBytes );
 	for ( int i = 0 ; i < NUM_VERTEX_FRAMES ; i++ ) {
@@ -221,8 +221,8 @@ idVertexCache::Shutdown
 */
 void idVertexCache::Shutdown() {
 //	PurgeAll();	// !@#: also purge the temp buffers
-	qglBindVertexArray(0);
-	qglDeleteVertexArrays(1, &vao);
+	glBindVertexArray(0);
+	glDeleteVertexArrays(1, &vao);
 	headerAllocator.Shutdown();
 }
 
@@ -252,7 +252,7 @@ void idVertexCache::Alloc( void *data, int size, vertCache_t **buffer, bool inde
 			block->prev->next = block;
 
 			if( !virtualMemory ) {
-				qglGenBuffers(1, &block->vbo);
+				glGenBuffers(1, &block->vbo);
 			}
 		}
 	}
@@ -290,14 +290,14 @@ void idVertexCache::Alloc( void *data, int size, vertCache_t **buffer, bool inde
 	// copy the data
 	if ( block->vbo ) {
 		if ( indexBuffer ) {
-			qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, block->vbo );
-			qglBufferData( GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STATIC_DRAW );
+			glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, block->vbo );
+			glBufferData( GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STATIC_DRAW );
 		} else {
-			qglBindBuffer( GL_ARRAY_BUFFER, block->vbo );
+			glBindBuffer( GL_ARRAY_BUFFER, block->vbo );
 			if ( allocatingTempBuffer ) {
-				qglBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STREAM_DRAW );
+				glBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STREAM_DRAW );
 			} else {
-				qglBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STATIC_DRAW );
+				glBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)size, data, GL_STATIC_DRAW );
 			}
 		}
 	} else {
@@ -427,8 +427,8 @@ vertCache_t	*idVertexCache::AllocFrameTemp( void *data, int size ) {
 	block->vbo = tempBuffers[listNum]->vbo;
 
 	if ( block->vbo ) {
-		qglBindBuffer( GL_ARRAY_BUFFER, block->vbo );
-		qglBufferSubData( GL_ARRAY_BUFFER, block->offset, (GLsizeiptr)size, data );
+		glBindBuffer( GL_ARRAY_BUFFER, block->vbo );
+		glBufferSubData( GL_ARRAY_BUFFER, block->offset, (GLsizeiptr)size, data );
 	} else {
 		SIMDProcessor->Memcpy( (byte *)block->virtMem + block->offset, data, size );
 	}
@@ -474,8 +474,8 @@ void idVertexCache::EndFrame() {
 	if( !virtualMemory ) {
 		// unbind vertex buffers so normal virtual memory will be used in case
 		// r_useVertexBuffers / r_useIndexBuffers
-		qglBindBuffer( GL_ARRAY_BUFFER, 0 );
-		qglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+		glBindBuffer( GL_ARRAY_BUFFER, 0 );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 	}
 
 
