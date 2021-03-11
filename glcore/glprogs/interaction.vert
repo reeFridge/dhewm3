@@ -42,14 +42,15 @@ void main()
 	vec4 defaultTexCoord = vec4(0, 0.5, 0, 1);
 
 	vec3 vl = light_origin.xyz - aPos;
-	mat3 texture_space = transpose(mat3(aNormal, aTangent0, aTangent1));
+	// order of mat components dictated by old shaders
+	mat3 texture_space = transpose(mat3(aTangent0, aTangent1, aNormal));
 	tc_cube_map = vec4(texture_space * vl, 0);
 	vec3 vln = normalize(vl);
 	vec3 vvn = normalize(view_origin.xyz - aPos);
 	vec3 halfway = vln + vvn;
 	tc_specular_lookup = vec4(texture_space * halfway, 0);
 
-	vec4 tc = vec4(aTexCoords, 0, 0);
+	vec4 tc = vec4(aTexCoords, 0, 1);
 	mat4x2 bump_matrix = transpose(mat2x4(bump_matrix_s, bump_matrix_t));
 	tc_bump_map = vec4(vec2(bump_matrix * tc), 0, 1);
 	mat4x2 diffuse_matrix = transpose(mat2x4(diffuse_matrix_s, diffuse_matrix_t));
