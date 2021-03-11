@@ -32,7 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "idlib/containers/List.h"
 #include "framework/FileSystem.h"
 #include "renderer/Material.h"
-//#include "renderer/qgl.h"
 #include <glad/gl.h>
 
 /*
