@@ -45,7 +45,7 @@ struct shaderProgDef_t {
 
 static shaderProgDef_t shader_progs[MAX_GLPROGS] = {
 	{ "interaction.vert", "interaction.frag", SPROG_INTERACTION, 0 },
-	{ "default.vert", "default.frag", SPROG_DEFAULT, 0 },
+	{ "fill_depth.vert", "fill_depth.frag", SPROG_FILL_DEPTH_BUFFER, 0 },
 	{ "shadow.vert", "shadow.frag", SPROG_SHADOW, 0 },
 	{ "light_scale.vert", "light_scale.frag", SPROG_LIGHT_SCALE, 0 },
 	{ "shader_pass.vert", "shader_pass.frag", SPROG_SHADER_PASS, 0 },

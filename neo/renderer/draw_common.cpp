@@ -382,6 +382,7 @@ RB_T_FillDepthBuffer
 void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	// update the clip plane if needed
 	if ( backEnd.viewDef->numClipPlanes && surf->space != backEnd.currentSpace ) {
+		common->Printf("!!! TODO: RB_T_FillDepthBuffer clip planes TexGen\n");
 		GL_SelectTexture( 1 );
 
 		idPlane	plane;
@@ -449,17 +450,20 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	}
 
 	idDrawVert *ac = (idDrawVert *)vertexCache.Position( tri->ambientCache );
-	qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)ac->xyz.ToFloatPtr());
-	qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), (void*)ac->st.ToFloatPtr());
+	qglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->xyz.ToFloatPtr());
+	qglVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof( idDrawVert ), ac->st.ToFloatPtr());
 	qglEnableVertexAttribArray(0);
 	qglEnableVertexAttribArray(8);
-	GLuint shader_prog = R_FindShaderProgram(SPROG_DEFAULT);
+
+	GLuint shader_prog = R_FindShaderProgram(SPROG_FILL_DEPTH_BUFFER);
 	qglUseProgram(shader_prog);
 
 	// default matrices
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelMatrix);
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "modelView"), 1, GL_FALSE, backEnd.viewDef->worldSpace.modelViewMatrix);
 	qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "proj"), 1, GL_FALSE, backEnd.viewDef->projectionMatrix);
+	// textures
+	qglUniform1i(qglGetUniformLocation(shader_prog, "texture_0"), 0);
 
 	if ( surf->space ) {
 		qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "model"), 1, GL_FALSE, surf->space->modelMatrix);
@@ -515,8 +519,13 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 			pStage->texture.image->Bind();
 
 			// set texture matrix and texGens
-			// todo convert to core
 			RB_PrepareStageTexturing( pStage, surf, ac );
+			qglUniform1i(qglGetUniformLocation(shader_prog, "HAS_TEXTURE_MATRIX"), pStage->texture.hasMatrix);
+			if (pStage->texture.hasMatrix) {
+				float	matrix[16];
+				RB_GetShaderTextureMatrix( surf->shaderRegisters, &pStage->texture, matrix );
+				qglUniformMatrix4fv(qglGetUniformLocation(shader_prog, "texture_matrix"), 1, GL_FALSE, matrix);
+			}
 
 			// draw it
 			RB_DrawElementsWithCounters( tri );
@@ -536,7 +545,6 @@ void RB_T_FillDepthBuffer( const drawSurf_t *surf ) {
 	if ( drawSolid ) {
 		qglUniform4fv(qglGetUniformLocation(shader_prog, "color"), 1, color);
 		globalImages->whiteImage->Bind();
-		qglUniform1i(qglGetUniformLocation(shader_prog, "t_global0"), 0);
 
 		// draw it
 		RB_DrawElementsWithCounters( tri );
@@ -573,6 +581,7 @@ void RB_STD_FillDepthBuffer( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 
 	// enable the second texture for mirror plane clipping if needed
 	if ( backEnd.viewDef->numClipPlanes ) {
+		common->Printf("!!! TODO: RB_STD_FillDepthBuffer clip planes TexGen\n");
 		GL_SelectTexture( 1 );
 		globalImages->alphaNotchImage->Bind();
 		//qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
